@@ -20,6 +20,8 @@
 //#endif
 
 #include "VulkanContext.h"
+#include "VulkanModel.h"
+#include "VulkanImage.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -40,6 +42,29 @@ int main()
     VulkanRenderer::VulkanContext vulkanContext(window, "app", "engine");
     glfwSetWindowUserPointer(window, &vulkanContext);
     glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
+
+
+    VulkanRenderer::VulkanImage texture("textures/viking_room.png",
+                                        vulkanContext.PhysicalDevice->Device,
+                                        *vulkanContext.Device,
+                                        vulkanContext.CommandPool,
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    vulkanContext.Images.push_back(&texture);
+    
+
+    VulkanRenderer::VulkanModel model("models/viking_room.obj",
+                                      texture,
+                                      *vulkanContext.UniformBuffer,
+                                      vulkanContext.PhysicalDevice->Device,
+                                      vulkanContext.Device->Device, 
+                                      vulkanContext.Device->GraphicsQueue,
+                                      vulkanContext.CommandPool);
+    vulkanContext.Models.push_back(&model);
+
+    
+    //Do this now that we have all the images/models set up
+    vulkanContext.CreateDescriptorSets();
 
     //loop
     while (!glfwWindowShouldClose(window)) 

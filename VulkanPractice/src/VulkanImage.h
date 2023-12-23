@@ -37,8 +37,9 @@ namespace VulkanRenderer
 		VkImageView TextureImageView;
 		VkDeviceMemory TextureImageMemory;
 		VkSampler TextureSampler;
+		VkDescriptorImageInfo descriptor;
 
-		VulkanImage(const std::string& path, VkPhysicalDevice& physicalDevice, VulkanDevice& device, VkCommandPool& commandPool);
+		VulkanImage(const std::string& path, VkPhysicalDevice& physicalDevice, VulkanDevice& device, VkCommandPool& commandPool, VkImageLayout imageLayout);
 		~VulkanImage();
 	};
 

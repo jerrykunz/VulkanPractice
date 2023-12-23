@@ -2,38 +2,38 @@
 
 namespace VulkanRenderer
 {
-	VulkanVertexBuffer::VulkanVertexBuffer(VkDevice& device)
+	VulkanVertexBuffer::VulkanVertexBuffer()
 	{
-        _device = &device;
+
 	}
 
-    void VulkanVertexBuffer::LoadVertices(VkPhysicalDevice& physicalDevice, VkQueue& graphicsQueue, VkCommandPool& commandPool)
+    void VulkanVertexBuffer::LoadVertices(std::vector<Vertex>& vertices, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool)
     {
-        VkDeviceSize bufferSize = sizeof(Vertices[0]) * Vertices.size();
+        VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
         //program -> stagingbuffer -> vertexbuffer
         //this is somehow more optimal, very weird as it is, something to do with cpu->gpu transfer bottleneck or w/e
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
-        CreateBuffer(physicalDevice, *_device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+        CreateBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(*_device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, Vertices.data(), (size_t)bufferSize);
-        vkUnmapMemory(*_device, stagingBufferMemory);
+        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices.data(), (size_t)bufferSize);
+        vkUnmapMemory(device, stagingBufferMemory);
 
-        CreateBuffer(physicalDevice, *_device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, _vertexBufferMemory);
+        CreateBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
 
-        CopyBuffer(*_device, graphicsQueue, commandPool, stagingBuffer, VertexBuffer, bufferSize);
+        CopyBuffer(device, graphicsQueue, commandPool, stagingBuffer, VertexBuffer, bufferSize);
 
-        vkDestroyBuffer(*_device, stagingBuffer, nullptr);
-        vkFreeMemory(*_device, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, stagingBufferMemory, nullptr);
     }
 
-    VulkanVertexBuffer::~VulkanVertexBuffer()
+    void VulkanVertexBuffer::Dispose(VkDevice& device)
     {
-        vkDestroyBuffer(*_device, VertexBuffer, nullptr);
-        vkFreeMemory(*_device, _vertexBufferMemory, nullptr);
+        vkDestroyBuffer(device, VertexBuffer, nullptr);
+        vkFreeMemory(device, VertexBufferMemory, nullptr);
     }
 }

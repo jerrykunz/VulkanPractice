@@ -38,14 +38,8 @@ namespace VulkanRenderer
 		VkDebugUtilsMessengerEXT _debugMessenger;	
 
 		//Wrappers
-		VulkanPhysicalDevice* _physicalDevice;
-		
 		VulkanSwapChain* _swapChain;
-		VulkanFrameBuffer* _frameBuffer;
-		
-		VulkanUniformBuffer* _uniformBuffer;		
-
-		std::vector<VulkanImage*> _images;
+		VulkanFrameBuffer* _frameBuffer;		
 
 		//Vulkan structs
 		VkRenderPass _renderPass;
@@ -53,9 +47,6 @@ namespace VulkanRenderer
 
 		VkPipelineLayout _pipelineLayout;
 		VkPipeline _graphicsPipeline;
-
-		VkCommandPool _commandPool;
-
 
 		VkDescriptorPool _descriptorPool;
 
@@ -105,8 +96,6 @@ namespace VulkanRenderer
 		//Descriptorpool
 		void CreateDescriptorPool();
 
-		//DescriptorSets
-		void CreateDescriptorSets();
 
 		//Commandbuffs
 		void CreateCommandBuffers();
@@ -123,13 +112,22 @@ namespace VulkanRenderer
 
 		VkInstance Instance;
 		VkSurfaceKHR Surface;
-		VulkanDevice* Device;
 
-		VulkanVertexBuffer* VertexBuffer;
-		VulkanIndexBuffer* IndexBuffer;
+		VkCommandPool CommandPool;
+
+		VulkanDevice* Device;
+		VulkanPhysicalDevice* PhysicalDevice;
+		VulkanUniformBuffer* UniformBuffer;
+
+		std::vector<VulkanModel*> Models;
+		std::vector<VulkanImage*> Images;
 
 		VulkanContext(GLFWwindow* window, const std::string& applicationName, const std::string& engineName);
 		~VulkanContext();
+
+
+		//DescriptorSets
+		void CreateDescriptorSets();
 
 		void DrawFrame(GLFWwindow* window);
 

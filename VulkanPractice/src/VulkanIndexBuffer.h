@@ -8,18 +8,13 @@ namespace VulkanRenderer
 {
 	class VulkanIndexBuffer : public VulkanBuffer
 	{
-	private:
-		VkDevice* _device;
-		
-		VkDeviceMemory _indexBufferMemory;
-		
-
 	public:
 		VkBuffer IndexBuffer;
-		std::vector<uint32_t> Indices;
+		VkDeviceMemory IndexBufferMemory;
+		size_t Size;
 
-		VulkanIndexBuffer(VkDevice& device);
-		void LoadIndices(VkPhysicalDevice& physicalDevice, VkQueue& graphicsQueue, VkCommandPool& commandPool);
-		~VulkanIndexBuffer();
+		VulkanIndexBuffer();
+		void LoadIndices(std::vector<uint32_t>& indices, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
+		void Dispose(VkDevice& device);
 	};
 }

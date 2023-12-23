@@ -8,16 +8,12 @@ namespace VulkanRenderer
 {
 	class VulkanVertexBuffer : public VulkanBuffer
 	{
-	private:
-		VkDevice* _device;		
-		VkDeviceMemory _vertexBufferMemory;
-		
 	public:
 		VkBuffer VertexBuffer;
-		std::vector<Vertex> Vertices;
+		VkDeviceMemory VertexBufferMemory;
 
-		VulkanVertexBuffer(VkDevice& device);
-		void LoadVertices(VkPhysicalDevice& physicalDevice, VkQueue& graphicsQueue, VkCommandPool& commandPool);
-		~VulkanVertexBuffer();
+		VulkanVertexBuffer();
+		void LoadVertices(std::vector<Vertex>& vertices, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
+		void Dispose(VkDevice& device);
 	};
 }

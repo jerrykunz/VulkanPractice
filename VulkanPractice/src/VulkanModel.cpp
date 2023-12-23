@@ -1,17 +1,22 @@
-#include <tiny_obj_loader.h>
 #include "VulkanModel.h"
 
 
 namespace VulkanRenderer
 {
-    VulkanModel::VulkanModel(const std::string& path)
+    VulkanModel::VulkanModel(const std::string& path, VulkanImage& image, VulkanUniformBuffer& uniformBuffer, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool) :
+        Texture(&image)
     {
+        //Texture = &image;
+        TransformIndex = uniformBuffer.AddTransform();
+        Transform = glm::mat4();
+
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str())) {
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str())) 
+        {
             throw std::runtime_error(warn + err);
         }
 
@@ -23,13 +28,15 @@ namespace VulkanRenderer
             {
                 Vertex vertex{};
 
-                vertex.pos = {
+                vertex.pos = 
+                {
                     attrib.vertices[3 * index.vertex_index + 0],
                     attrib.vertices[3 * index.vertex_index + 1],
                     attrib.vertices[3 * index.vertex_index + 2]
                 };
 
-                vertex.texCoord = {
+                vertex.texCoord = 
+                {
                     attrib.texcoords[2 * index.texcoord_index + 0],
                     1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
                 };
@@ -44,6 +51,17 @@ namespace VulkanRenderer
                 Indices.push_back(uniqueVertices[vertex]);
             }
         }
+
+        VertexBuffer.LoadVertices(Vertices, physicalDevice, device, graphicsQueue, commandPool);
+        IndexBuffer.LoadIndices(Indices, physicalDevice, device, graphicsQueue, commandPool);
+    }
+
+    void VulkanModel::Dispose(VkDevice& device, VulkanUniformBuffer& uniformBuffer)
+    {
+        uniformBuffer.RemoveTransform(TransformIndex);
+        VertexBuffer.Dispose(device);
+        IndexBuffer.Dispose(device);
+        delete Texture;
     }
 
 }

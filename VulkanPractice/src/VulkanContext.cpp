@@ -1,4 +1,5 @@
 #include "VulkanContext.h"
+#include "VulkanPushConstants.h"
 
 
 
@@ -25,21 +26,21 @@ namespace VulkanRenderer
         InitializeDebugMessenger();
         CreateSurface(window);
 
-        _physicalDevice = new VulkanPhysicalDevice(Instance, 
+        PhysicalDevice = new VulkanPhysicalDevice(Instance, 
                                                    Surface);
 
         Device = new VulkanDevice(_enableValidationLayers,
                                    _validationLayers,
-                                   *_physicalDevice);
+                                   *PhysicalDevice);
 
-        VulkanSwapChainSupportDetails swapChainDetails = _physicalDevice->QuerySwapChainSupport(Surface);
+        VulkanSwapChainSupportDetails swapChainDetails = PhysicalDevice->QuerySwapChainSupport(Surface);
         _swapChain = new VulkanSwapChain(*window,
                                         Device->Device,
                                         Surface,
                                         swapChainDetails,
-                                        _physicalDevice->QueueIndices);
+                                        PhysicalDevice->QueueIndices);
 
-        CreateRenderPass(_physicalDevice,
+        CreateRenderPass(PhysicalDevice,
                          Device,
                          _swapChain->SwapChainImageFormat);
 
@@ -47,51 +48,21 @@ namespace VulkanRenderer
         CreateGraphicsPipeline();
         CreateCommandPool();
 
-        _frameBuffer = new VulkanFrameBuffer(*_physicalDevice,
+        _frameBuffer = new VulkanFrameBuffer(*PhysicalDevice,
                                              Device->Device,
                                              _renderPass,
                                              _swapChain->SwapChainImageViews,
                                              _swapChain->SwapChainExtent,
                                              _swapChain->SwapChainImageFormat);
 
-        VertexBuffer = new VulkanVertexBuffer(Device->Device);
-        IndexBuffer = new VulkanIndexBuffer(Device->Device);
-
-        _uniformBuffer = new VulkanUniformBuffer(_physicalDevice->Device, 
-                                                 Device->Device,
-                                                 _maxFramesInFlight);
+        UniformBuffer = new VulkanUniformBuffer(PhysicalDevice->Device, 
+                                                Device->Device,
+                                                _maxFramesInFlight);
 
         CreateDescriptorPool();
 
-        //Add resources
 
-        VulkanImage* image = new VulkanImage("textures/viking_room.png" ,
-                                             _physicalDevice->Device, 
-                                             *Device,
-                                             _commandPool);
-        _images.push_back(image);
-
-        VulkanModel model("models/viking_room.obj");   
-
-        for (const Vertex& vert : model.Vertices)
-        {
-            VertexBuffer->Vertices.push_back(vert);
-        }
-
-        for (auto ind : model.Indices)
-        {
-            IndexBuffer->Indices.push_back(ind);
-        }
-
-        VertexBuffer->LoadVertices(_physicalDevice->Device,
-                                   Device->GraphicsQueue,
-                                   _commandPool);
-
-        IndexBuffer->LoadIndices(_physicalDevice->Device,
-                                 Device->GraphicsQueue,
-                                 _commandPool);
-
-        CreateDescriptorSets();
+        //CreateDescriptorSets();
         CreateCommandBuffers();
         CreateSyncObjects();
     }
@@ -118,7 +89,7 @@ namespace VulkanRenderer
             throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-        _uniformBuffer->Update(_currentFrame, _swapChain->SwapChainExtent);
+        UniformBuffer->Update(_currentFrame, _swapChain->SwapChainExtent);
 
         vkResetFences(Device->Device, 1, &_inFlightFences[_currentFrame]);
 
@@ -186,24 +157,24 @@ namespace VulkanRenderer
         vkDestroyPipelineLayout(Device->Device, _pipelineLayout, nullptr);
         vkDestroyRenderPass(Device->Device, _renderPass, nullptr);
 
-        delete _uniformBuffer;
-        _uniformBuffer = nullptr;
+        delete UniformBuffer;
+        UniformBuffer = nullptr;
 
         vkDestroyDescriptorPool(Device->Device, _descriptorPool, nullptr);
 
-        for (auto img : _images)
+        for (auto img : Images)
         {
             delete img;
         }
-        _images.clear();
+        Images.clear();
 
         vkDestroyDescriptorSetLayout(Device->Device, _descriptorSetLayout, nullptr);
 
-        delete IndexBuffer;
+        /*delete IndexBuffer;
         IndexBuffer = nullptr;
 
         delete VertexBuffer;
-        VertexBuffer = nullptr;
+        VertexBuffer = nullptr;*/
 
         for (size_t i = 0; i < _maxFramesInFlight; i++) 
         {
@@ -212,7 +183,7 @@ namespace VulkanRenderer
             vkDestroyFence(Device->Device, _inFlightFences[i], nullptr);
         }
 
-        vkDestroyCommandPool(Device->Device, _commandPool, nullptr);
+        vkDestroyCommandPool(Device->Device, CommandPool, nullptr);
 
         delete Device;
         Device = nullptr;
@@ -268,15 +239,26 @@ namespace VulkanRenderer
         scissor.extent = _swapChain->SwapChainExtent;
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        VkBuffer vertexBuffers[] = { VertexBuffer->VertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-        vkCmdBindIndexBuffer(commandBuffer, IndexBuffer->IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[_currentFrame], 0, nullptr);
+        for (size_t i = 0; i < Models.size(); i++)
+        {
+            VkBuffer vertexBuffers[] = { Models[i]->VertexBuffer.VertexBuffer };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(IndexBuffer->Indices.size()), 1, 0, 0, 0);
+            vkCmdBindIndexBuffer(commandBuffer, Models[i]->IndexBuffer.IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[_currentFrame], 0, nullptr);
+
+            //test
+            PushConstants constants;
+            constants.ModelIndex = Models[i]->TransformIndex;
+            vkCmdPushConstants(commandBuffer, _pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstants), &constants);
+
+
+            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Models[i]->IndexBuffer.Size), 1, 0, 0, 0);
+        }
+
 
         vkCmdEndRenderPass(commandBuffer);
 
@@ -366,15 +348,15 @@ namespace VulkanRenderer
         delete _frameBuffer;
         delete _swapChain;
 
-        VulkanSwapChainSupportDetails swapChainDetails = _physicalDevice->QuerySwapChainSupport(Surface);
+        VulkanSwapChainSupportDetails swapChainDetails = PhysicalDevice->QuerySwapChainSupport(Surface);
         _swapChain = new VulkanSwapChain(*window,
                                          Device->Device,
                                          Surface,
                                          swapChainDetails,
-                                         _physicalDevice->QueueIndices);
+                                         PhysicalDevice->QueueIndices);
 
 
-        _frameBuffer = new VulkanFrameBuffer(*_physicalDevice,
+        _frameBuffer = new VulkanFrameBuffer(*PhysicalDevice,
                                              Device->Device,
                                              _renderPass,
                                              _swapChain->SwapChainImageViews,
@@ -420,23 +402,25 @@ namespace VulkanRenderer
         for (size_t i = 0; i < _maxFramesInFlight; i++) 
         {
             VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = _uniformBuffer->UniformBuffers[i];
+            bufferInfo.buffer = UniformBuffer->UniformBuffers[i];
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(UniformBufferObject);
             
-            size_t imgsSz = _images.size();
+            size_t imgsSz = Images.size();
             std::vector<VkDescriptorImageInfo> imageDescriptors(imgsSz);
             for (int j = 0; j < imgsSz; j++)
             {
-                VkDescriptorImageInfo imageInfo{};
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = _images[j]->TextureImageView;
-                imageInfo.sampler = _images[j]->TextureSampler;
-                imageDescriptors[j] = imageInfo;
+                //VkDescriptorImageInfo imageInfo{};
+                //imageInfo.imageLayout = Images[j]->descriptor.imageLayout; // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                //imageInfo.imageView = Images[j]->TextureImageView;
+                //imageInfo.sampler = Images[j]->TextureSampler;
+                //imageDescriptors[j] = imageInfo;
+
+                imageDescriptors[j] = Images[j]->descriptor;
             }
 
-            
-            int sz = _images.size() + 1;
+            //here we create the uniform buffer which shaders use
+            int sz = Images.size() + 1;
             std::vector<VkWriteDescriptorSet> descriptorWrites(sz);
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -447,6 +431,7 @@ namespace VulkanRenderer
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
+            //texture sampler(s) for shader use
             for (int j = 1, k = 0; j < sz; j++, k++)
             {
                 descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -736,14 +721,14 @@ namespace VulkanRenderer
 
     void VulkanContext::CreateCommandPool()
     {
-        VulkanQueueFamilyIndices queueFamilyIndices = _physicalDevice->QueueIndices;
+        VulkanQueueFamilyIndices queueFamilyIndices = PhysicalDevice->QueueIndices;
 
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-        if (vkCreateCommandPool(Device->Device, &poolInfo, nullptr, &_commandPool) != VK_SUCCESS) {
+        if (vkCreateCommandPool(Device->Device, &poolInfo, nullptr, &CommandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create graphics command pool!");
         }
     }
@@ -804,7 +789,7 @@ namespace VulkanRenderer
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampling.sampleShadingEnable = VK_FALSE;
-        multisampling.rasterizationSamples = _physicalDevice->MsaaSamples;
+        multisampling.rasterizationSamples = PhysicalDevice->MsaaSamples;
 
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -838,10 +823,21 @@ namespace VulkanRenderer
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
 
+        //new
+        VkPushConstantRange pushConstantRange = {};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Specify the shader stage
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(PushConstants);
+
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pSetLayouts = &_descriptorSetLayout;
+
+        //new
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
         if (vkCreatePipelineLayout(Device->Device, &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS) 
         {
@@ -880,7 +876,7 @@ namespace VulkanRenderer
 
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = _commandPool;
+        allocInfo.commandPool = CommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = (uint32_t)_commandBuffers.size();
 

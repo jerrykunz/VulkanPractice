@@ -15,9 +15,12 @@ namespace VulkanRenderer
 	VulkanImage::VulkanImage(const std::string& path,
                              VkPhysicalDevice& physicalDevice, 
                              VulkanDevice& device,
-                             VkCommandPool& commandPool)
+                             VkCommandPool& commandPool,
+                             VkImageLayout imageLayout)
 	{
         _device = &device.Device;
+
+        descriptor.imageLayout = imageLayout;
 
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -82,6 +85,8 @@ namespace VulkanRenderer
         {
             throw std::runtime_error("failed to create texture sampler!");
         }
+
+        descriptor.sampler = TextureSampler;
     }
 
     void VulkanImage::GenerateMipmaps(VkPhysicalDevice& physicalDevice, VulkanDevice& device, VkCommandPool& commandPool, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
@@ -381,6 +386,8 @@ namespace VulkanRenderer
         {
             throw std::runtime_error("failed to create texture image view!");
         }
+
+        descriptor.imageView = TextureImageView;
     }
 
 }
