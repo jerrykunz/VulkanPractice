@@ -22,6 +22,7 @@
 #include "VulkanContext.h"
 #include "VulkanModel.h"
 #include "VulkanImage.h"
+#include "GameObject.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -53,25 +54,27 @@ int main()
     vulkanContext.Images.push_back(&texture);
     
 
-  /*  VulkanRenderer::VulkanModel model("models/viking_room.obj",
+    VulkanRenderer::VulkanModel model("models/viking_room.obj",
                                       texture,
-                                      *vulkanContext.UniformBuffer,
                                       vulkanContext.PhysicalDevice->Device,
                                       vulkanContext.Device->Device, 
                                       vulkanContext.Device->GraphicsQueue,
                                       vulkanContext.CommandPool);
-    vulkanContext.Models.push_back(&model);*/
+    vulkanContext.Models.push_back(&model);
 
-    //test
-    VulkanRenderer::VulkanModel model2("models/viking_room.obj",
-        texture,
-        *vulkanContext.UniformBuffer,
-        vulkanContext.PhysicalDevice->Device,
-        vulkanContext.Device->Device,
-        vulkanContext.Device->GraphicsQueue,
-        vulkanContext.CommandPool);
-    vulkanContext.Models.push_back(&model2);
+    GameObject object1
+    {
+        .Transform = glm::mat4(),
+        .Model = &model,
+        .RotationMultiplier = 1.0f,        
+    };
 
+    GameObject object2
+    {
+        .Transform = glm::mat4(),
+        .Model = &model,
+        .RotationMultiplier = 0.1f,
+    };
     
     //Do this now that we have all the images/models set up
     vulkanContext.CreateDescriptorSets();
@@ -80,6 +83,10 @@ int main()
     while (!glfwWindowShouldClose(window)) 
     {
         glfwPollEvents();
+        object1.Update();
+        object2.Update();
+        object1.Render();
+        object2.Render();
         vulkanContext.DrawFrame(window);
     }
 

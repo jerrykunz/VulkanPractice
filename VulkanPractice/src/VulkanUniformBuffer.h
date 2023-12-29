@@ -22,7 +22,7 @@ namespace VulkanRenderer
 
 	struct InstanceDataUBO
 	{
-		InstanceData instance[100];
+		InstanceData instances[100];
 	};
 
 
@@ -44,24 +44,37 @@ namespace VulkanRenderer
 	{
 	private:
 		VkDevice* _device;
-		int _maxFramesInFlight;
+		/*int _maxFramesInFlight;
 		std::vector<FreeChunk> _freeChunks;
 		int _modelIndex;
 
-		static const int MAX_MODELS = 100;
+		static const int MAX_MODELS = 100;*/
 
 	public:
 		std::vector<VkBuffer> UniformBuffers;
 		std::vector<VkDeviceMemory> UniformBuffersMemory;
-		std::vector<ViewProjectionUBO*> UniformBuffersMapped;
+		std::vector<void*> UniformBuffersMapped;
+
+		VkDescriptorSetLayoutBinding DescriptorSetLayout;
+		size_t Size;
 
 
-		VulkanUniformBuffer(VkPhysicalDevice& physicalDevice, VkDevice& device, int maxFramesInFlight);
+
+		VulkanUniformBuffer(VkPhysicalDevice& physicalDevice,
+							VkDevice& device,
+							size_t size,
+							int maxFramesInFlight, 
+							uint32_t binding,
+							uint32_t descriptorCount,
+							VkDescriptorType descriptorType,
+							VkSampler* pImmutableSamplers,
+							VkShaderStageFlags stageFlags);
+
 		~VulkanUniformBuffer();
-		void Update(uint32_t currentImage, VkExtent2D swapChainExtent);
+		/*void Update(uint32_t currentImage, VkExtent2D swapChainExtent);
 		uint32_t AddTransform();
 		void RemoveTransform(uint32_t index);
 		glm::mat4 GetTransform(uint32_t index, int frameIndex);
-		void SetTransform(uint32_t index, glm::mat4 transform, int frameIndex);
+		void SetTransform(uint32_t index, glm::mat4 transform, int frameIndex);*/
 	};
 }

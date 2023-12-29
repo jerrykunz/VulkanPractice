@@ -3,12 +3,12 @@
 
 namespace VulkanRenderer
 {
-    VulkanModel::VulkanModel(const std::string& path, VulkanImage& image, VulkanUniformBuffer& uniformBuffer, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool) :
+    VulkanModel::VulkanModel(const std::string& path, VulkanImage& image/*, VulkanUniformBuffer& uniformBuffer*/, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool) :
         Texture(&image)
     {
         //Texture = &image;
-        TransformIndex = uniformBuffer.AddTransform();
-        Transform = glm::mat4();
+        //TransformIndex = uniformBuffer.AddTransform();
+        //Transform = glm::mat4();
 
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
@@ -56,9 +56,14 @@ namespace VulkanRenderer
         IndexBuffer.LoadIndices(Indices, physicalDevice, device, graphicsQueue, commandPool);
     }
 
+    void VulkanModel::AddInstanceData(glm::mat4 transform)
+    {
+        Instances.push_back(InstanceData{ .Transform = transform });
+    }
+
     void VulkanModel::Dispose(VkDevice& device, VulkanUniformBuffer& uniformBuffer)
     {
-        uniformBuffer.RemoveTransform(TransformIndex);
+        //uniformBuffer.RemoveTransform(TransformIndex);
         VertexBuffer.Dispose(device);
         IndexBuffer.Dispose(device);
         delete Texture;

@@ -2,19 +2,23 @@
 
 #define MAX_MODELS 100
 
-struct ModelObject 
+struct InstanceData 
 {
     mat4 transform;
 };
 
-layout(binding = 0) uniform UniformBufferObject 
+layout(binding = 0) uniform ViewProjectionUBO 
 {
     //mat4 model; //just so we can test both normal and array
     mat4 view;
     mat4 proj;
-    ModelObject models[MAX_MODELS]; 
-} ubo;
+    //ModelObject models[MAX_MODELS]; 
+} viewProjUBO;
 
+layout(binding = 1) uniform InstanceDataUBO 
+{
+    InstanceData instances[MAX_MODELS]; 
+} instanceDataUBO;
 
 
 layout(location = 0) in vec3 inPosition;
@@ -24,19 +28,19 @@ layout(location = 2) in vec2 inTexCoord;
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
-layout(push_constant) uniform PushConstants 
-{
-    int ModelIndex;
-} pushConstants;
+//layout(push_constant) uniform PushConstants 
+//{
+//    int ModelIndex;
+//} pushConstants;
 
 void main() 
 {
-
     // Retrieve the model matrix based on the index
-    mat4 modelMatrix = ubo.models[pushConstants.ModelIndex].transform;
+    mat4 modelMatrix = instanceDataUBO.instances[gl_InstanceIndex].transform;
 
     //gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    gl_Position = ubo.proj * ubo.view * modelMatrix * vec4(inPosition, 1.0);
+
+    gl_Position = viewProjUBO.proj * viewProjUBO.view * modelMatrix * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
 }

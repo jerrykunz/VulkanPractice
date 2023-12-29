@@ -17,8 +17,9 @@ namespace VulkanRenderer
 	class VulkanModel
 	{
 	public:
-		uint32_t TransformIndex;
-		glm::mat4 Transform;
+		/*uint32_t TransformIndex;
+		glm::mat4 Transform;*/
+		std::vector<InstanceData> Instances;
 
 		std::vector<Vertex> Vertices;
 		VulkanVertexBuffer VertexBuffer;
@@ -30,7 +31,10 @@ namespace VulkanRenderer
 
 		//might need descriptorset later
 
-		VulkanModel(const std::string& path, VulkanImage& image, VulkanUniformBuffer& uniformBuffer, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
+		VulkanModel(const std::string& path, VulkanImage& image/*, VulkanUniformBuffer& uniformBuffer*/, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
+
+		void AddInstanceData(glm::mat4 transform);
+
 		void Dispose(VkDevice& device, VulkanUniformBuffer& uniformBuffer);
 	};
 }

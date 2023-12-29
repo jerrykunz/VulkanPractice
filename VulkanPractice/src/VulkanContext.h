@@ -82,7 +82,7 @@ namespace VulkanRenderer
 									 VkFormatFeatureFlags features);
 
 		//DescriptorSetLayout
-		void CreateDescriptorSetLayout();
+		void CreateDescriptorSetLayout(/*const std::vector<VulkanUniformBuffer*>& uniformBuffers*/);
 
 		//Shaders
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
@@ -94,7 +94,7 @@ namespace VulkanRenderer
 		void CreateCommandPool();
 
 		//Descriptorpool
-		void CreateDescriptorPool();
+		void CreateDescriptorPool(/*const std::vector<VulkanUniformBuffer*>& uniformBuffers*/);
 
 
 		//Commandbuffs
@@ -117,8 +117,11 @@ namespace VulkanRenderer
 
 		VulkanDevice* Device;
 		VulkanPhysicalDevice* PhysicalDevice;
-		VulkanUniformBuffer* UniformBuffer;
 
+		VulkanUniformBuffer* ViewProjectionUniformBuffer;
+		VulkanUniformBuffer* InstanceDataUniformBuffer;
+
+		std::vector<VulkanUniformBuffer*> UniformBuffers;
 		std::vector<VulkanModel*> Models;
 		std::vector<VulkanImage*> Images;
 
