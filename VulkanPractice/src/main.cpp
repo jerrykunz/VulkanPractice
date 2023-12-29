@@ -53,14 +53,24 @@ int main()
     vulkanContext.Images.push_back(&texture);
     
 
-    VulkanRenderer::VulkanModel model("models/viking_room.obj",
+  /*  VulkanRenderer::VulkanModel model("models/viking_room.obj",
                                       texture,
                                       *vulkanContext.UniformBuffer,
                                       vulkanContext.PhysicalDevice->Device,
                                       vulkanContext.Device->Device, 
                                       vulkanContext.Device->GraphicsQueue,
                                       vulkanContext.CommandPool);
-    vulkanContext.Models.push_back(&model);
+    vulkanContext.Models.push_back(&model);*/
+
+    //test
+    VulkanRenderer::VulkanModel model2("models/viking_room.obj",
+        texture,
+        *vulkanContext.UniformBuffer,
+        vulkanContext.PhysicalDevice->Device,
+        vulkanContext.Device->Device,
+        vulkanContext.Device->GraphicsQueue,
+        vulkanContext.CommandPool);
+    vulkanContext.Models.push_back(&model2);
 
     
     //Do this now that we have all the images/models set up

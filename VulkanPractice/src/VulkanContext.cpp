@@ -401,21 +401,20 @@ namespace VulkanRenderer
 
         for (size_t i = 0; i < _maxFramesInFlight; i++) 
         {
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = UniformBuffer->UniformBuffers[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(UniformBufferObject);
+            VkDescriptorBufferInfo viewProjectionBufferInfo{};
+            viewProjectionBufferInfo.buffer = UniformBuffer->UniformBuffers[i];
+            viewProjectionBufferInfo.offset = 0;
+            viewProjectionBufferInfo.range = sizeof(ViewProjectionUBO);
+
+            /*VkDescriptorBufferInfo InstanceDataBufferInfo{};
+            viewProjectionBufferInfo.buffer = UniformBuffer->UniformBuffers[i];
+            viewProjectionBufferInfo.offset = 0;
+            viewProjectionBufferInfo.range = sizeof(InstanceDataUBO);*/
             
             size_t imgsSz = Images.size();
             std::vector<VkDescriptorImageInfo> imageDescriptors(imgsSz);
             for (int j = 0; j < imgsSz; j++)
             {
-                //VkDescriptorImageInfo imageInfo{};
-                //imageInfo.imageLayout = Images[j]->descriptor.imageLayout; // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                //imageInfo.imageView = Images[j]->TextureImageView;
-                //imageInfo.sampler = Images[j]->TextureSampler;
-                //imageDescriptors[j] = imageInfo;
-
                 imageDescriptors[j] = Images[j]->descriptor;
             }
 
@@ -429,7 +428,7 @@ namespace VulkanRenderer
             descriptorWrites[0].dstArrayElement = 0;
             descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptorWrites[0].descriptorCount = 1;
-            descriptorWrites[0].pBufferInfo = &bufferInfo;
+            descriptorWrites[0].pBufferInfo = &viewProjectionBufferInfo;
 
             //texture sampler(s) for shader use
             for (int j = 1, k = 0; j < sz; j++, k++)

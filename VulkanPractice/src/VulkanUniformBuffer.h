@@ -13,13 +13,26 @@
 
 namespace VulkanRenderer
 {
+	
+
+	struct InstanceData
+	{
+		alignas(16) glm::mat4 Transform;
+	};
+
+	struct InstanceDataUBO
+	{
+		InstanceData instance[100];
+	};
+
+
 	struct ModelObject
 	{
 		alignas(16) glm::mat4 Transform;
 	};
 
 	//You can (and should) probably have multiple UBOs for different purposes
-	struct UniformBufferObject
+	struct ViewProjectionUBO
 	{
 		//alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
@@ -40,7 +53,7 @@ namespace VulkanRenderer
 	public:
 		std::vector<VkBuffer> UniformBuffers;
 		std::vector<VkDeviceMemory> UniformBuffersMemory;
-		std::vector<UniformBufferObject*> UniformBuffersMapped;
+		std::vector<ViewProjectionUBO*> UniformBuffersMapped;
 
 
 		VulkanUniformBuffer(VkPhysicalDevice& physicalDevice, VkDevice& device, int maxFramesInFlight);
