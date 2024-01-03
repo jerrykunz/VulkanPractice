@@ -1,5 +1,7 @@
 #pragma once
 #include "VulkanModel.h"
+#include "VulkanContext.h"
+#include "VulkanUniformBuffer.h"
 
 class GameObject
 {
@@ -11,5 +13,5 @@ public:
 
 	//GameObject();
 	void Update();
-	void Render();
+	void Render(VulkanRenderer::InstanceDataUBO* ubo);
 };

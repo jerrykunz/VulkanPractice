@@ -153,10 +153,10 @@ namespace VulkanRenderer
 
     void VulkanContext::DrawFrame(Input& input, GLFWwindow* window)
     {
-        vkWaitForFences(Device->Device, 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(Device->Device, 1, &_inFlightFences[CurrentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(Device->Device, _swapChain->SwapChain, UINT64_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(Device->Device, _swapChain->SwapChain, UINT64_MAX, _imageAvailableSemaphores[CurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) 
         {
@@ -170,45 +170,45 @@ namespace VulkanRenderer
 
         //ViewProjectionUniformBuffer->Update(_currentFrame, _swapChain->SwapChainExtent);
 
-        vkResetFences(Device->Device, 1, &_inFlightFences[_currentFrame]);
+        vkResetFences(Device->Device, 1, &_inFlightFences[CurrentFrame]);
 
-        vkResetCommandBuffer(_commandBuffers[_currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+        vkResetCommandBuffer(_commandBuffers[CurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
 
         //moved here for testing purposes
         VkExtent2D swapChainExtent = _swapChain->SwapChainExtent;
-        ViewProjectionUBO* viewProjUBO = (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[_currentFrame];
+        ViewProjectionUBO* viewProjUBO = (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[CurrentFrame];
 
         if (input.mouseMoveY != 0)
         {
             int a = 3;
         }
 
-        //viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        viewProjUBO->view = CreateViewMatrix(glm::radians(input.mouseMoveY * 0.01f), glm::radians(input.mouseMoveX * 0.01f), glm::radians(0.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+        viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+       // viewProjUBO->view = CreateViewMatrix(glm::radians(input.mouseMoveY * 0.01f), glm::radians(input.mouseMoveX * 0.01f), glm::radians(0.0f), glm::vec3(2.0f, 2.0f, 2.0f));
 
         viewProjUBO->proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
         viewProjUBO->proj[1][1] *= -1;
 
 
-        RecordCommandBuffer(_commandBuffers[_currentFrame], imageIndex);
+        RecordCommandBuffer(_commandBuffers[CurrentFrame], imageIndex);
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = { _imageAvailableSemaphores[_currentFrame] };
+        VkSemaphore waitSemaphores[] = { _imageAvailableSemaphores[CurrentFrame] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
 
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &_commandBuffers[_currentFrame];
+        submitInfo.pCommandBuffers = &_commandBuffers[CurrentFrame];
 
-        VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[_currentFrame] };
+        VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[CurrentFrame] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(Device->GraphicsQueue, 1, &submitInfo, _inFlightFences[_currentFrame]) != VK_SUCCESS)
+        if (vkQueueSubmit(Device->GraphicsQueue, 1, &submitInfo, _inFlightFences[CurrentFrame]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
@@ -237,7 +237,7 @@ namespace VulkanRenderer
             throw std::runtime_error("failed to present swap chain image!");
         }
 
-        _currentFrame = (_currentFrame + 1) % _maxFramesInFlight;
+        CurrentFrame = (CurrentFrame + 1) % _maxFramesInFlight;
 
     }
 
@@ -338,7 +338,7 @@ namespace VulkanRenderer
         scissor.extent = _swapChain->SwapChainExtent;
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[_currentFrame], 0, nullptr);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
 
         //Camera
@@ -366,12 +366,19 @@ namespace VulkanRenderer
             vkCmdBindIndexBuffer(commandBuffer, Models[i]->IndexBuffer.IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
             //Update instance UBO
-            size_t sz = Models[i]->Instances.size();
-            InstanceDataUBO* instanceDataUBO = (InstanceDataUBO*)InstanceDataUniformBuffer->UniformBuffersMapped[_currentFrame];
+            /*size_t sz = Models[i]->Instances.size();
+            InstanceDataUBO* instanceDataUBO = (InstanceDataUBO*)InstanceDataUniformBuffer->UniformBuffersMapped[CurrentFrame];
             std::copy(Models[i]->Instances.begin(), Models[i]->Instances.end(), instanceDataUBO->instances);
-            Models[i]->Instances.clear();            
+            Models[i]->Instances.clear();     */       
 
-            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Models[i]->IndexBuffer.Size), sz, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer,
+                            static_cast<uint32_t>(Models[i]->IndexBuffer.Size),
+                            Models[i]->instanceCount,
+                            0,
+                            0,
+                            Models[i]->GetFirstInstanceIndex());
+            //reset instance count for next frame
+            Models[i]->instanceCount = 0;
         }
 
 
@@ -715,7 +722,12 @@ namespace VulkanRenderer
         if (glfwCreateWindowSurface(Instance, window, nullptr, &Surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
-    }    
+    }
+
+    InstanceDataUBO* VulkanContext::GetInstanceDataUBO()
+    {
+        return (InstanceDataUBO*)InstanceDataUniformBuffer->UniformBuffersMapped[CurrentFrame];
+    }
 
     //RENDER PASS
 

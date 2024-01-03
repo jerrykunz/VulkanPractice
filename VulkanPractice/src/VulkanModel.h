@@ -19,7 +19,11 @@ namespace VulkanRenderer
 	public:
 		/*uint32_t TransformIndex;
 		glm::mat4 Transform;*/
-		std::vector<InstanceData> Instances;
+		//std::vector<InstanceData> Instances;
+		
+		uint8_t instanceCount;
+		uint8_t instancesIndex;
+		uint8_t instancesEnd;
 
 		std::vector<Vertex> Vertices;
 		VulkanVertexBuffer VertexBuffer;
@@ -33,8 +37,10 @@ namespace VulkanRenderer
 
 		VulkanModel(const std::string& path, VulkanImage& image/*, VulkanUniformBuffer& uniformBuffer*/, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
 
-		void AddInstanceData(glm::mat4 transform);
+		//void AddInstanceData(glm::mat4 transform);
 
 		void Dispose(VkDevice& device, VulkanUniformBuffer& uniformBuffer);
+
+		uint8_t GetFirstInstanceIndex();
 	};
 }

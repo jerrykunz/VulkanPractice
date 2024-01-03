@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+
 //GameObject::GameObject() : Model(nullptr)
 //{
 //    RotationMultiplier = 1.0f;
@@ -9,7 +10,7 @@ void GameObject::Update()
 {
     if (Visible)
     {
-
+        Model->instanceCount++;
     }
 
 
@@ -21,9 +22,11 @@ void GameObject::Update()
     Transform = glm::rotate(glm::mat4(1.0f), RotationMultiplier * time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
-void GameObject::Render()
+void GameObject::Render(VulkanRenderer::InstanceDataUBO* ubo)
 {
-    //We could just render all gameobjects using the same model one after the other using EnTT
-    //Then there's no need for intermediate vector inside Model
-    Model->AddInstanceData(Transform);
+    if (Visible)
+    {
+        //TODO: update UBO at once before rendering, right now it's being streamed to GPU for each instance which probably sucks
+        ubo->instances[Model->instancesIndex++] = VulkanRenderer::InstanceData{ .Transform = Transform };
+    }
 }

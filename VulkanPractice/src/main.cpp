@@ -112,6 +112,15 @@ int main()
                                       vulkanContext.Device->GraphicsQueue,
                                       vulkanContext.CommandPool);
     vulkanContext.Models.push_back(&model);
+    VulkanRenderer::VulkanModel model2("models/viking_room.obj",
+        texture,
+        vulkanContext.PhysicalDevice->Device,
+        vulkanContext.Device->Device,
+        vulkanContext.Device->GraphicsQueue,
+        vulkanContext.CommandPool);
+    vulkanContext.Models.push_back(&model2);
+
+    std::vector<GameObject> objects;
 
     GameObject object1
     {
@@ -120,14 +129,16 @@ int main()
         .Model = &model,
         .RotationMultiplier = 1.0f,        
     };
+    objects.push_back(object1);
 
     GameObject object2
     {
-        .Visible = false,
+        .Visible = true,
         .Transform = glm::mat4(),
-        .Model = &model,
+        .Model = &model2,
         .RotationMultiplier = 0.1f,
     };
+    objects.push_back(object2);
     
     //Do this now that we have all the images/models set up
     vulkanContext.CreateDescriptorSets();
@@ -141,10 +152,35 @@ int main()
         mouse_offset_x = 0;
         mouse_offset_y = 0;
 
-        object1.Update();
-        object2.Update();
-        object1.Render();
-        object2.Render();
+        //get instance visibility
+        for (GameObject& obj : objects)
+        {
+            obj.Update();
+        }
+
+        //Update instanceDataUBO allocation according to visible instances
+        int modelCount = vulkanContext.Models.size();
+        int index = 0;
+        for (int i = 0; i < modelCount; i++)
+        {
+            //get count of instances marked as visible in GameObject.Update()
+            uint8_t instanceCount = vulkanContext.Models[i]->instanceCount;
+
+            //set range of instances
+            vulkanContext.Models[i]->instancesEnd = index + instanceCount;
+            vulkanContext.Models[i]->instancesIndex = index;
+
+            //update index for next model
+            index = index + instanceCount;
+        }
+
+        auto ubo = vulkanContext.GetInstanceDataUBO();
+        for (GameObject& obj : objects)
+        {
+            obj.Render(ubo);
+        }
+
+
         vulkanContext.DrawFrame(input, window);
     }
 

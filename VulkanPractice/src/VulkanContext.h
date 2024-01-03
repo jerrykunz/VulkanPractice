@@ -33,7 +33,6 @@ namespace VulkanRenderer
 		bool _enableValidationLayers;
 		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		int _maxFramesInFlight;
-		uint32_t _currentFrame = 0;
 
 
 		VkDebugUtilsMessengerEXT _debugMessenger;	
@@ -108,7 +107,8 @@ namespace VulkanRenderer
 
 		glm::mat4 CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position);
 
-	public:		
+	public:
+		uint32_t CurrentFrame = 0;
 		bool FrameBufferResized;
 
 		VkInstance Instance;
@@ -140,7 +140,7 @@ namespace VulkanRenderer
 		//SURFACE
 		void CreateSurface(GLFWwindow* window);
 
-
+		InstanceDataUBO* GetInstanceDataUBO();
 	};
 
 

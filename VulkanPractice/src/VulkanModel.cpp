@@ -56,10 +56,10 @@ namespace VulkanRenderer
         IndexBuffer.LoadIndices(Indices, physicalDevice, device, graphicsQueue, commandPool);
     }
 
-    void VulkanModel::AddInstanceData(glm::mat4 transform)
+    /*void VulkanModel::AddInstanceData(glm::mat4 transform)
     {
         Instances.push_back(InstanceData{ .Transform = transform });
-    }
+    }*/
 
     void VulkanModel::Dispose(VkDevice& device, VulkanUniformBuffer& uniformBuffer)
     {
@@ -67,6 +67,11 @@ namespace VulkanRenderer
         VertexBuffer.Dispose(device);
         IndexBuffer.Dispose(device);
         delete Texture;
+    }
+
+    uint8_t VulkanModel::GetFirstInstanceIndex()
+    {
+        return instancesEnd - instanceCount;
     }
 
 }
