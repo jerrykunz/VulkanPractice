@@ -21,7 +21,8 @@
 #include "VulkanUniformBuffer.h"
 #include "VulkanImage.h"
 #include "VulkanModel.h"
-
+#include "Input.h"
+#include <glm/gtx/matrix_decompose.hpp>
 
 
 namespace VulkanRenderer
@@ -43,14 +44,12 @@ namespace VulkanRenderer
 
 		//Vulkan structs
 		VkRenderPass _renderPass;
-		VkDescriptorSetLayout _descriptorSetLayout;
 
 		VkPipelineLayout _pipelineLayout;
 		VkPipeline _graphicsPipeline;
 
+		VkDescriptorSetLayout _descriptorSetLayout;
 		VkDescriptorPool _descriptorPool;
-
-		//VkDescriptorSetLayout _descriptorSetLayout;
 		std::vector<VkDescriptorSet> _descriptorSets;
 
 		std::vector<VkCommandBuffer> _commandBuffers;
@@ -107,6 +106,8 @@ namespace VulkanRenderer
 
 		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
+		glm::mat4 CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position);
+
 	public:		
 		bool FrameBufferResized;
 
@@ -132,12 +133,14 @@ namespace VulkanRenderer
 		//DescriptorSets
 		void CreateDescriptorSets();
 
-		void DrawFrame(GLFWwindow* window);
+		void DrawFrame(Input& input, GLFWwindow* window);
 
 		void CleanUp();
 
 		//SURFACE
 		void CreateSurface(GLFWwindow* window);
+
+
 	};
 
 

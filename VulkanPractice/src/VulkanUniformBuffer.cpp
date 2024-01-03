@@ -49,7 +49,7 @@ namespace VulkanRenderer
                          device,
                          bufferSize, 
                          VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, //using these you can directly access the buffer from code without uploading to gpu
                          UniformBuffers[i],
                          UniformBuffersMemory[i]);
 
