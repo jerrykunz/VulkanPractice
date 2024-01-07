@@ -359,6 +359,10 @@ namespace VulkanRenderer
         //Batch drawcall per model, including all instances
         for (size_t i = 0; i < Models.size(); i++)
         {
+            //no visible instances, no rendering
+            if (Models[i]->instanceCount <= 0)
+                continue;
+
             VkBuffer vertexBuffers[] = { Models[i]->VertexBuffer.VertexBuffer };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);

@@ -166,6 +166,11 @@ int main()
             //get count of instances marked as visible in GameObject.Update()
             uint8_t instanceCount = vulkanContext.Models[i]->instanceCount;
 
+            //no visible instances, skip altogether
+            //not needed I think
+           /* if (instanceCount <= 0)
+                continue;*/
+
             //set range of instances
             vulkanContext.Models[i]->instancesEnd = index + instanceCount;
             vulkanContext.Models[i]->instancesIndex = index;
