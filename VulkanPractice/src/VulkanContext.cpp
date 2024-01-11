@@ -7,10 +7,10 @@ namespace VulkanRenderer
 {
     //testing
 
-    float _pitch = 0.f;
+   /* float _pitch = 0.f;
     float _yaw = 0.f;
     glm::mat4 viewMatrix = glm::mat4(1.0f);
-    glm::vec3 prevCameraFront;
+    glm::vec3 prevCameraFront;*/
 
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -95,9 +95,9 @@ namespace VulkanRenderer
         CreateSyncObjects();
 
         //test
-        glm::vec3 _position(1.0f, 1.0f, 1.0f);
+       /* glm::vec3 _position(1.0f, 1.0f, 1.0f);
         prevCameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
-        viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));*/
         //viewMatrix = glm::translate(viewMatrix, -_position);
     }
 
@@ -106,50 +106,50 @@ namespace VulkanRenderer
 
     }
 
-    glm::mat4 VulkanContext::CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position)
-    {
-       /* glm::vec3 front;
-        front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        front.y = sin(glm::radians(pitch));
-        front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cameraFront = glm::normalize(front);*/
+    //glm::mat4 VulkanContext::CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position)
+    //{
+    //   /* glm::vec3 front;
+    //    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    //    front.y = sin(glm::radians(pitch));
+    //    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    //    cameraFront = glm::normalize(front);*/
 
 
-        glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
-        cameraFront.x = -cos(glm::radians(yaw)) * sin(glm::radians(pitch));
-        cameraFront.y = sin(glm::radians(yaw));
-        cameraFront.z = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cameraFront = glm::normalize(cameraFront);
+    //    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
+    //    cameraFront.x = -cos(glm::radians(yaw)) * sin(glm::radians(pitch));
+    //    cameraFront.y = sin(glm::radians(yaw));
+    //    cameraFront.z = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    //    cameraFront = glm::normalize(cameraFront);
 
-        if (pitch != 0.f || yaw != 0.f)
-        {
-            int a = 3;
-        }
+    //    if (pitch != 0.f || yaw != 0.f)
+    //    {
+    //        int a = 3;
+    //    }
 
-        viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),  cameraFront, glm::vec3(0.0f, 0.0f, 1.0f));
+    //    viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),  cameraFront, glm::vec3(0.0f, 0.0f, 1.0f));
 
-        // Create an identity matrix
-        //glm::mat4 viewMatrix = glm::mat4(1.0f);
+    //    // Create an identity matrix
+    //    //glm::mat4 viewMatrix = glm::mat4(1.0f);
 
-        // Apply roll (rotation around the forward axis)
-        //viewMatrix = glm::rotate(viewMatrix, roll, glm::vec3(0.0f, 0.0f, 1.0f));
+    //    // Apply roll (rotation around the forward axis)
+    //    //viewMatrix = glm::rotate(viewMatrix, roll, glm::vec3(0.0f, 0.0f, 1.0f));
 
-        // Apply pitch (rotation around the right axis)
-        //viewMatrix = glm::rotate(viewMatrix, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    //    // Apply pitch (rotation around the right axis)
+    //    //viewMatrix = glm::rotate(viewMatrix, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
 
-        // Apply yaw (rotation around the up axis)
-        //viewMatrix = glm::rotate(viewMatrix, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    //    // Apply yaw (rotation around the up axis)
+    //    //viewMatrix = glm::rotate(viewMatrix, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // Apply translation to the camera position
-        //viewMatrix = glm::translate(viewMatrix, -position);
+    //    // Apply translation to the camera position
+    //    //viewMatrix = glm::translate(viewMatrix, -position);
 
 
-        /*_pitch += pitch;
-        _yaw += yaw;
-        std::cout << _pitch << " " << _yaw << std::endl;*/
+    //    /*_pitch += pitch;
+    //    _yaw += yaw;
+    //    std::cout << _pitch << " " << _yaw << std::endl;*/
 
-        return viewMatrix;
-    }
+    //    return viewMatrix;
+    //}
 
     void VulkanContext::DrawFrame(Input& input, GLFWwindow* window)
     {
@@ -175,19 +175,19 @@ namespace VulkanRenderer
         vkResetCommandBuffer(_commandBuffers[CurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
 
         //moved here for testing purposes
-        VkExtent2D swapChainExtent = _swapChain->SwapChainExtent;
-        ViewProjectionUBO* viewProjUBO = (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[CurrentFrame];
+       // VkExtent2D swapChainExtent = _swapChain->SwapChainExtent;
+       // ViewProjectionUBO* viewProjUBO = (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[CurrentFrame];
 
-        if (input.mouseMoveY != 0)
-        {
-            int a = 3;
-        }
+       // if (input.mouseMoveY != 0)
+       // {
+       //     int a = 3;
+       // }
 
-        viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-       // viewProjUBO->view = CreateViewMatrix(glm::radians(input.mouseMoveY * 0.01f), glm::radians(input.mouseMoveX * 0.01f), glm::radians(0.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+       // viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+       //// viewProjUBO->view = CreateViewMatrix(glm::radians(input.mouseMoveY * 0.01f), glm::radians(input.mouseMoveX * 0.01f), glm::radians(0.0f), glm::vec3(2.0f, 2.0f, 2.0f));
 
-        viewProjUBO->proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
-        viewProjUBO->proj[1][1] *= -1;
+       // viewProjUBO->proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+       // viewProjUBO->proj[1][1] *= -1;
 
 
         RecordCommandBuffer(_commandBuffers[CurrentFrame], imageIndex);
@@ -726,6 +726,11 @@ namespace VulkanRenderer
         if (glfwCreateWindowSurface(Instance, window, nullptr, &Surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
+    }
+
+    ViewProjectionUBO* VulkanContext::GetViewProjectionUBO()
+    {
+        return (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[CurrentFrame];
     }
 
     InstanceDataUBO* VulkanContext::GetInstanceDataUBO()

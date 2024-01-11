@@ -24,6 +24,7 @@
 #include "VulkanImage.h"
 #include "GameObject.h"
 #include "Input.h"
+#include "Camera.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -52,6 +53,8 @@ static void MouseCallback(GLFWwindow* window, double xpos, double ypos)
 
     mouse_offset_x += xpos - prev_mouse_x;
     mouse_offset_y += ypos - prev_mouse_y;
+    prev_mouse_x = xpos;
+    prev_mouse_y = ypos;
 }
 
 
@@ -64,6 +67,7 @@ static Input GetInput(GLFWwindow* window)
 
     int up = glfwGetKey(window, GLFW_KEY_SPACE);
     int down = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
+
 
     return Input
     {
@@ -122,6 +126,14 @@ int main()
 
     std::vector<GameObject> objects;
 
+    Camera camera;
+    camera.type = Camera::CameraType::firstperson;
+    camera.flipY = true;
+    camera.setPerspective(60.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 512.0f);
+    camera.setTranslation(glm::vec3(0.5f, -2.0f, -2.0f));
+    camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+    camera.movementSpeed = 3.0f;
+
     GameObject object1
     {
         .Visible = true,
@@ -143,50 +155,78 @@ int main()
     //Do this now that we have all the images/models set up
     vulkanContext.CreateDescriptorSets();
 
+    const double targetFrameRate = 60.0;
+    const double frameTime = 1.0 / targetFrameRate;
+    double lastFrameTime = glfwGetTime();
+
     //loop
     while (!glfwWindowShouldClose(window)) 
     {
         glfwPollEvents();
-        Input input = GetInput(window);
-        //reset mouse movement amount for next frame
-        mouse_offset_x = 0;
-        mouse_offset_y = 0;
 
-        //get instance visibility
-        for (GameObject& obj : objects)
+        double currentFrameTime = glfwGetTime();
+        double deltaTime = currentFrameTime - lastFrameTime;
+
+        if (deltaTime >= frameTime) 
         {
-            obj.Update();
+            lastFrameTime = currentFrameTime;
+
+            Input input = GetInput(window);
+            //reset mouse movement amount for next frame
+            mouse_offset_x = 0;
+            mouse_offset_y = 0;
+
+
+            camera.keys.left = input.left;
+            camera.keys.right = input.right;
+            camera.keys.forward = input.forward;
+            camera.keys.backward = input.backward;
+            camera.keys.up = input.up;
+            camera.keys.down = input.down;
+            camera.rotate(glm::vec3(-input.mouseMoveY * 0.01f, input.mouseMoveX * 0.01f, 0.0f));
+            camera.update(deltaTime);
+
+            //get instance visibility
+            for (GameObject& obj : objects)
+            {
+                obj.Update();
+            }
+
+            //Update instanceDataUBO allocation according to visible instances
+            int modelCount = vulkanContext.Models.size();
+            int index = 0;
+            for (int i = 0; i < modelCount; i++)
+            {
+                //get count of instances marked as visible in GameObject.Update()
+                uint8_t instanceCount = vulkanContext.Models[i]->instanceCount;
+
+                //no visible instances, skip altogether
+                //not needed I think
+               /* if (instanceCount <= 0)
+                    continue;*/
+
+                    //set range of instances
+                vulkanContext.Models[i]->instancesEnd = index + instanceCount;
+                vulkanContext.Models[i]->instancesIndex = index;
+
+                //update index for next model
+                index = index + instanceCount;
+            }
+
+            auto viewProjUBO = vulkanContext.GetViewProjectionUBO();
+            viewProjUBO->proj = camera.matrices.perspective;
+            //viewProjUBO->proj[1][1] *= -1;
+            viewProjUBO->view = camera.matrices.view;
+           
+
+            auto instanceDataUBO = vulkanContext.GetInstanceDataUBO();
+            for (GameObject& obj : objects)
+            {
+                obj.Render(instanceDataUBO);
+            }
+
+            vulkanContext.DrawFrame(input, window);
         }
-
-        //Update instanceDataUBO allocation according to visible instances
-        int modelCount = vulkanContext.Models.size();
-        int index = 0;
-        for (int i = 0; i < modelCount; i++)
-        {
-            //get count of instances marked as visible in GameObject.Update()
-            uint8_t instanceCount = vulkanContext.Models[i]->instanceCount;
-
-            //no visible instances, skip altogether
-            //not needed I think
-           /* if (instanceCount <= 0)
-                continue;*/
-
-            //set range of instances
-            vulkanContext.Models[i]->instancesEnd = index + instanceCount;
-            vulkanContext.Models[i]->instancesIndex = index;
-
-            //update index for next model
-            index = index + instanceCount;
-        }
-
-        auto ubo = vulkanContext.GetInstanceDataUBO();
-        for (GameObject& obj : objects)
-        {
-            obj.Render(ubo);
-        }
-
-
-        vulkanContext.DrawFrame(input, window);
     }
 
     vkDeviceWaitIdle(vulkanContext.Device->Device);    

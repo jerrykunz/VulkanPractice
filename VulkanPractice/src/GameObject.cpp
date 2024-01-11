@@ -13,6 +13,9 @@ void GameObject::Update()
         Model->instanceCount++;
     }
 
+    //test
+    Transform = glm::mat4(1.0f);
+    return;
 
     static auto startTime = std::chrono::high_resolution_clock::now();
 

@@ -105,7 +105,7 @@ namespace VulkanRenderer
 
 		void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
-		glm::mat4 CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position);
+		//glm::mat4 CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position);
 
 	public:
 		uint32_t CurrentFrame = 0;
@@ -140,6 +140,7 @@ namespace VulkanRenderer
 		//SURFACE
 		void CreateSurface(GLFWwindow* window);
 
+		ViewProjectionUBO* GetViewProjectionUBO();
 		InstanceDataUBO* GetInstanceDataUBO();
 	};
 
