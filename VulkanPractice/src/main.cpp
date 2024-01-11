@@ -68,6 +68,10 @@ static Input GetInput(GLFWwindow* window)
     int up = glfwGetKey(window, GLFW_KEY_SPACE);
     int down = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
 
+    if (up || down)
+    {
+        int a = 3;
+    }
 
     return Input
     {
@@ -128,7 +132,7 @@ int main()
 
     Camera camera;
     camera.type = Camera::CameraType::firstperson;
-    camera.flipY = true;
+    camera.flipY = -1.0f;
     camera.setPerspective(60.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 512.0f);
     camera.setTranslation(glm::vec3(0.5f, -2.0f, -2.0f));
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));

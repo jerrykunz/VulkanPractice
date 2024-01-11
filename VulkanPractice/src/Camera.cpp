@@ -7,19 +7,18 @@ void Camera::updateViewMatrix()
 	glm::mat4 transM;
 
 	//up/down
-	rotM = glm::rotate(rotM, glm::radians(rotation.x * (flipY ? -1.0f : 1.0f)), glm::vec3(1.0f, 0.0f, 0.0f));
+	rotM = glm::rotate(rotM, glm::radians(rotation.x * flipY), glm::vec3(1.0f, 0.0f, 0.0f));
 	//left/right
 	rotM = glm::rotate(rotM, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	//roll left/right
 	rotM = glm::rotate(rotM, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	glm::vec3 translation = position;
-	if (flipY) 
-	{
-		translation.y *= -1.0f;
-	}
-	transM = glm::translate(glm::mat4(1.0f), translation);
+	/*glm::vec3 translation = position;
+	translation.y *= flipY;
+	transM = glm::translate(glm::mat4(1.0f), translation);*/
 
+
+	transM = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y * flipY, position.z));
 	if (type == CameraType::firstperson)
 	{
 		//used to translate world coords to view coords
@@ -57,19 +56,13 @@ void Camera::setPerspective(float fov, float aspect, float znear, float zfar)
 	this->znear = znear;
 	this->zfar = zfar;
 	matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
-	if (flipY)
-	{
-		matrices.perspective[1][1] *= -1.0f;
-	}
+	matrices.perspective[1][1] *= flipY;
 }
 
 void Camera::updateAspectRatio(float aspect)
 {
 	matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
-	if (flipY)
-	{
-		matrices.perspective[1][1] *= -1.0f;
-	}
+	matrices.perspective[1][1] *= flipY;
 }
 
 void Camera::setPosition(glm::vec3 position)
@@ -86,10 +79,22 @@ void Camera::setRotation(glm::vec3 rotation)
 
 void Camera::rotate(glm::vec3 delta)
 {
-	this->rotation += delta;
+	//Basic
+	//this->rotation += delta;
+	//this->rotation.x = glm::clamp(this->rotation.x, -90.0f, 90.0f);	
+	
 
-	 // Clamp the pitch to the range of -90 to +90 degrees
-	this->rotation.x = glm::clamp(this->rotation.x, -90.0f, 90.0f);
+	//TEST
+	//katso selän taakse siirtämällä hiiri ylös/alas (mene siltaan tai katso jalkojen välistä)
+	//rotaatiot toimii oikein kun kerrotaan delta -1.0f:llä, mutta liikkuminen pitää kans muuttaa samoin
+	//+delta.x vai ei, siinäpä kysymys
+	if (rotation.x + delta.x > 90.0f || rotation.x + delta.x < -90.0f)
+	{
+		delta.y *= -1.0f;
+	}
+	this->rotation.x = glm::clamp(this->rotation.x, -180.0f, 180.0f);
+
+	this->rotation += delta;
 
 	//std::cout << rotation.x << " " << rotation.y << " " << rotation.z << std::endl;
 
