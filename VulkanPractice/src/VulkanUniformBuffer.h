@@ -37,7 +37,7 @@ namespace VulkanRenderer
 		//alignas(16) glm::mat4 model;
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
-		ModelObject models[100];
+		//ModelObject models[100];
 	};
 
 	class VulkanUniformBuffer : public VulkanBuffer

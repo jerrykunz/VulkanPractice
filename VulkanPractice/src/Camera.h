@@ -42,12 +42,12 @@ public:
 
 	struct
 	{
-		bool left = false;
-		bool right = false;
-		bool forward = false;
-		bool backward = false;
-		bool up = false;
-		bool down = false;
+		int left = 0;
+		int right = 0;
+		int forward = 0;
+		int backward = 0;
+		int up = 0;
+		int down = 0;
 	} keys;
 
 	bool moving();

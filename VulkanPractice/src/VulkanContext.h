@@ -46,6 +46,7 @@ namespace VulkanRenderer
 
 		VkPipelineLayout _pipelineLayout;
 		VkPipeline _graphicsPipeline;
+		VkPipeline _GraphicsPipeline2D;
 
 		VkDescriptorSetLayout _descriptorSetLayout;
 		VkDescriptorPool _descriptorPool;
@@ -87,6 +88,7 @@ namespace VulkanRenderer
 
 		//Gfxpipeline
 		void CreateGraphicsPipeline();
+		void CreateGraphicsPipeline2D();
 
 		//cmdpool
 		void CreateCommandPool();

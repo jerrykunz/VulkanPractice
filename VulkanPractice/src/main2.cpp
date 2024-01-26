@@ -701,6 +701,10 @@ private:
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
+        //test,DELETE
+        /*rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;*/
+
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampling.sampleShadingEnable = VK_FALSE;

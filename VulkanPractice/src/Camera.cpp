@@ -17,7 +17,6 @@ void Camera::updateViewMatrix()
 	translation.y *= flipY;
 	transM = glm::translate(glm::mat4(1.0f), translation);*/
 
-
 	transM = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y * flipY, position.z));
 	if (type == CameraType::firstperson)
 	{
@@ -37,7 +36,8 @@ void Camera::updateViewMatrix()
 
 bool Camera::moving()
 {
-	return keys.left || keys.right || keys.forward || keys.backward || keys.up || keys.down;
+	//return keys.left || keys.right || keys.forward || keys.backward || keys.up || keys.down;
+	return (keys.left ^ keys.right) || (keys.forward ^ keys.backward) || (keys.up ^ keys.down);
 }
 
 float Camera::getNearClip()
@@ -128,7 +128,49 @@ void Camera::update(float deltaTime)
 	updated = false;
 	if (type == CameraType::firstperson)
 	{
-		if (moving())
+		//if (moving())
+		//{
+			//glm::vec3 camFront;
+			//camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
+			//camFront.y = sin(glm::radians(rotation.x));
+			//camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
+			//camFront = glm::normalize(camFront);
+
+			//glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); // Up vector
+
+			//float moveSpeed = deltaTime * movementSpeed;
+
+			//if (keys.forward)
+			//	position += camFront * moveSpeed;
+			//if (keys.backward)
+			//	position -= camFront * moveSpeed;
+			//if (keys.left)
+			//	position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;			
+			//if (keys.right)
+			//	position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+
+			//// Additional controls for moving up and down
+			//if (keys.up)
+			//	position += camUp * moveSpeed;  // Move up
+			//if (keys.down)
+			//	position -= camUp * moveSpeed;  // Move down
+		//}
+
+		float moveSpeed = deltaTime * movementSpeed;
+
+
+		int moveUpDown = -keys.down + keys.up;
+		if (moveUpDown)
+		{
+			glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); // Up vector
+			position += (float)moveUpDown * camUp * moveSpeed;
+		}
+
+
+		int moveLeftRight = -keys.left + keys.right;
+		int moveBackwardForward = -keys.backward + keys.forward;
+
+		if (moveLeftRight || moveBackwardForward)
 		{
 			glm::vec3 camFront;
 			camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
@@ -136,24 +178,15 @@ void Camera::update(float deltaTime)
 			camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
 			camFront = glm::normalize(camFront);
 
-			glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f); // Up vector
+			if (moveLeftRight)
+			{
+				position += (float)moveLeftRight * glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+			}
 
-			float moveSpeed = deltaTime * movementSpeed;
-
-			if (keys.forward)
-				position += camFront * moveSpeed;
-			if (keys.backward)
-				position -= camFront * moveSpeed;
-			if (keys.left)
-				position -= glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;			
-			if (keys.right)
-				position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
-
-			// Additional controls for moving up and down
-			if (keys.up)
-				position += camUp * moveSpeed;  // Move up
-			if (keys.down)
-				position -= camUp * moveSpeed;  // Move down
+			if (moveBackwardForward)
+			{
+				position += (float)moveBackwardForward * camFront * moveSpeed;
+			}
 		}
 	}
 
