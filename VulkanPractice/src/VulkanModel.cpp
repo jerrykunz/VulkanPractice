@@ -43,6 +43,10 @@ namespace VulkanRenderer
 
                 vertex.color = { 1.0f, 1.0f, 1.0f };
 
+                //new
+                vertex.texIndex = 0.0f;
+                vertex.tilingFactor = 1.0f;
+
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = static_cast<uint32_t>(Vertices.size());
                     Vertices.push_back(vertex);

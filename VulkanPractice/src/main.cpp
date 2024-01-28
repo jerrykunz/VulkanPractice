@@ -163,6 +163,7 @@ int main()
     const double frameTime = 1.0 / targetFrameRate;
     double lastFrameTime = glfwGetTime();
 
+
     //loop
     while (!glfwWindowShouldClose(window)) 
     {
@@ -228,6 +229,11 @@ int main()
             {
                 obj.Render(instanceDataUBO);
             }
+
+            glm::mat4 transformMatrix(1.0f);
+            float scaleFactor = 100.0f;  
+            transformMatrix = glm::scale(transformMatrix, glm::vec3(scaleFactor, scaleFactor, 1.0f));
+            vulkanContext.RenderQuad(transformMatrix, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
             vulkanContext.DrawFrame(input, window);
         }

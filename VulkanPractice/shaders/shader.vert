@@ -9,10 +9,8 @@ struct InstanceData
 
 layout(binding = 0) uniform ViewProjectionUBO 
 {
-    //mat4 model; //just so we can test both normal and array
     mat4 view;
     mat4 proj;
-    //ModelObject models[MAX_MODELS]; 
 } viewProjUBO;
 
 layout(binding = 1) uniform InstanceDataUBO 
@@ -37,8 +35,6 @@ void main()
 {
     // Retrieve the model matrix based on the index
     mat4 modelMatrix = instanceDataUBO.instances[gl_InstanceIndex].transform;
-
-    //gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
 
     gl_Position = viewProjUBO.proj * viewProjUBO.view * modelMatrix * vec4(inPosition, 1.0);
     fragColor = inColor;

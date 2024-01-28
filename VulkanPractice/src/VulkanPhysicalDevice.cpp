@@ -21,7 +21,8 @@ namespace VulkanRenderer
             if (IsDeviceSuitable(device, surface))
             {
                 Device = device;
-                MsaaSamples = GetMaxUsableSampleCount();
+                //MsaaSamples = GetMaxUsableSampleCount();
+                GetProperties();
                 break;
             }
         }
@@ -55,7 +56,8 @@ namespace VulkanRenderer
         return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
     }
 
-    VkSampleCountFlagBits VulkanPhysicalDevice::GetMaxUsableSampleCount()
+    //No longer used, GetProperties is better
+    /*VkSampleCountFlagBits VulkanPhysicalDevice::GetMaxUsableSampleCount()
     {
         VkPhysicalDeviceProperties physicalDeviceProperties;
         vkGetPhysicalDeviceProperties(Device, &physicalDeviceProperties);
@@ -69,6 +71,28 @@ namespace VulkanRenderer
         if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
 
         return VK_SAMPLE_COUNT_1_BIT;
+    }*/
+
+    void VulkanPhysicalDevice::GetProperties()
+    {
+        VkPhysicalDeviceProperties physicalDeviceProperties;
+        vkGetPhysicalDeviceProperties(Device, &physicalDeviceProperties);
+
+        //MaxTextures
+        //MaxTextures = physicalDeviceProperties.limits.maxDescriptorSetSamplers;
+
+        //MSAA Samples
+        VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+        MsaaSamples = VK_SAMPLE_COUNT_1_BIT;
+        for (int i = VK_SAMPLE_COUNT_64_BIT; i > 1; i = (i >> 1))
+        {
+            if (counts & i)
+            {
+                MsaaSamples = (VkSampleCountFlagBits)i;
+                break;
+            }
+        }
+
     }
 
     VulkanQueueFamilyIndices VulkanPhysicalDevice::FindQueueFamilies(const VkPhysicalDevice& device, VkSurfaceKHR& surface)

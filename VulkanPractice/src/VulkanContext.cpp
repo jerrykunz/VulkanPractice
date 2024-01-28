@@ -5,14 +5,6 @@
 
 namespace VulkanRenderer
 {
-    //testing
-
-   /* float _pitch = 0.f;
-    float _yaw = 0.f;
-    glm::mat4 viewMatrix = glm::mat4(1.0f);
-    glm::vec3 prevCameraFront;*/
-
-
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                         VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
@@ -76,6 +68,7 @@ namespace VulkanRenderer
 
         CreateDescriptorSetLayout();
         CreateGraphicsPipeline();
+        CreateGraphicsPipeline2D();
         CreateCommandPool();
 
         _frameBuffer = new VulkanFrameBuffer(*PhysicalDevice,
@@ -93,7 +86,7 @@ namespace VulkanRenderer
         //CreateDescriptorSets();
         CreateCommandBuffers();
         CreateSyncObjects();
-
+        InitQuadRendering();
         //test
        /* glm::vec3 _position(1.0f, 1.0f, 1.0f);
         prevCameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -104,6 +97,54 @@ namespace VulkanRenderer
     VulkanContext::~VulkanContext()
     {
 
+    }
+
+    void VulkanContext::InitQuadRendering()
+    {
+        _maxQuadVertices = 40000;
+        _maxQuadIndices = 60000;
+
+        QuadVertexCount = 0;
+        QuadIndexCount = 0;
+
+        QuadVertexBuffer.resize(_maxFramesInFlight);
+        QuadVertices.resize(_maxFramesInFlight);
+
+        for (int i = 0; i < _maxFramesInFlight; i++)
+        {
+            QuadVertexBuffer[i] = VulkanVertexBuffer();
+            QuadVertices[i] = new Vertex[_maxQuadVertices];
+        }
+
+        _quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+        _quadVertexPositions[1] = { -0.5f,  0.5f, 0.0f, 1.0f };
+        _quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+        _quadVertexPositions[3] = { 0.5f, -0.5f, 0.0f, 1.0f };
+
+
+
+        //Load indices, always the same so no need for per frame indices
+        QuadIndexBuffer = VulkanIndexBuffer();        
+        //uint32_t* quadIndices = new uint32_t[_maxQuadIndices];
+        std::vector<uint32_t> quadIndices(_maxQuadIndices);
+        uint32_t offset = 0;
+        for (uint32_t i = 0; i < _maxQuadIndices; i += 6)
+        {
+            quadIndices[i + 0] = offset + 0;
+            quadIndices[i + 1] = offset + 1;
+            quadIndices[i + 2] = offset + 2;
+
+            quadIndices[i + 3] = offset + 2;
+            quadIndices[i + 4] = offset + 3;
+            quadIndices[i + 5] = offset + 0;
+
+            offset += 4;
+        }
+        QuadIndexBuffer.LoadIndices(quadIndices,
+                                    PhysicalDevice->Device,
+                                    Device->Device,
+                                    Device->GraphicsQueue,
+                                    CommandPool);
     }
 
     //glm::mat4 VulkanContext::CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position)
@@ -168,27 +209,9 @@ namespace VulkanRenderer
             throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-        //ViewProjectionUniformBuffer->Update(_currentFrame, _swapChain->SwapChainExtent);
-
         vkResetFences(Device->Device, 1, &_inFlightFences[CurrentFrame]);
 
         vkResetCommandBuffer(_commandBuffers[CurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
-
-        //moved here for testing purposes
-       // VkExtent2D swapChainExtent = _swapChain->SwapChainExtent;
-       // ViewProjectionUBO* viewProjUBO = (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[CurrentFrame];
-
-       // if (input.mouseMoveY != 0)
-       // {
-       //     int a = 3;
-       // }
-
-       // viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-       //// viewProjUBO->view = CreateViewMatrix(glm::radians(input.mouseMoveY * 0.01f), glm::radians(input.mouseMoveX * 0.01f), glm::radians(0.0f), glm::vec3(2.0f, 2.0f, 2.0f));
-
-       // viewProjUBO->proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
-       // viewProjUBO->proj[1][1] *= -1;
-
 
         RecordCommandBuffer(_commandBuffers[CurrentFrame], imageIndex);
 
@@ -340,22 +363,6 @@ namespace VulkanRenderer
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
-
-        //Camera
-       /* VkExtent2D swapChainExtent = _swapChain->SwapChainExtent;
-        ViewProjectionUBO* viewProjUBO = (ViewProjectionUBO*)ViewProjectionUniformBuffer->UniformBuffersMapped[_currentFrame];
-
-        viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        viewProjUBO->proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
-        viewProjUBO->proj[1][1] *= -1;*/
-
-        //ortho test
-       /* viewProjUBO->view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        viewProjUBO->proj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);*/
-
-
-        
-
         //Batch drawcall per model, including all instances
         for (size_t i = 0; i < Models.size(); i++)
         {
@@ -369,12 +376,6 @@ namespace VulkanRenderer
 
             vkCmdBindIndexBuffer(commandBuffer, Models[i]->IndexBuffer.IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-            //Update instance UBO
-            /*size_t sz = Models[i]->Instances.size();
-            InstanceDataUBO* instanceDataUBO = (InstanceDataUBO*)InstanceDataUniformBuffer->UniformBuffersMapped[CurrentFrame];
-            std::copy(Models[i]->Instances.begin(), Models[i]->Instances.end(), instanceDataUBO->instances);
-            Models[i]->Instances.clear();     */       
-
             vkCmdDrawIndexed(commandBuffer,
                             static_cast<uint32_t>(Models[i]->IndexBuffer.Size),
                             Models[i]->instanceCount,
@@ -384,6 +385,34 @@ namespace VulkanRenderer
             //reset instance count for next frame
             Models[i]->instanceCount = 0;
         }
+
+        //2d quad rendering
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _GraphicsPipeline2D);
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout2D, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
+
+        QuadVertexBuffer[CurrentFrame].LoadVertices(QuadVertices[CurrentFrame],
+                                                    QuadVertexCount,
+                                                    PhysicalDevice->Device,
+                                                    Device->Device,
+                                                    Device->GraphicsQueue,
+                                                    CommandPool);
+
+        VkBuffer vertexBuffers[] = { QuadVertexBuffer[CurrentFrame].VertexBuffer };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+        vkCmdBindIndexBuffer(commandBuffer, QuadIndexBuffer.IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+        vkCmdDrawIndexed(commandBuffer,
+                         static_cast<uint32_t>(QuadIndexCount * sizeof(uint32_t)),
+                         1,
+                         0,
+                         0,
+                         0);
+        QuadVertexCount = 0;
+        QuadIndexCount = 0;
 
 
         vkCmdEndRenderPass(commandBuffer);
@@ -505,6 +534,12 @@ namespace VulkanRenderer
                                     .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight)
                                 });
 
+            poolSizes.push_back(VkDescriptorPoolSize
+                                {
+                                    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                    .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight)
+                                });
+
 
            /* poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             poolSizes[i].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);*/
@@ -513,8 +548,11 @@ namespace VulkanRenderer
         poolSizes.push_back(VkDescriptorPoolSize
             {
                 .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight)
+                //Added Maxtextures here, previously just _maxFramesInFlight, so 1 texture slot per frame
+                .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight * MaxTextures) 
             });
+
+
     /*    poolSizes[sz].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         poolSizes[sz].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);*/
 
@@ -553,16 +591,6 @@ namespace VulkanRenderer
 
         for (size_t i = 0; i < _maxFramesInFlight; i++) 
         {
-            /*VkDescriptorBufferInfo viewProjectionBufferInfo{};
-            viewProjectionBufferInfo.buffer = ViewProjectionUniformBuffer->UniformBuffers[i];
-            viewProjectionBufferInfo.offset = 0;
-            viewProjectionBufferInfo.range = sizeof(ViewProjectionUBO);*/
-
-            /*VkDescriptorBufferInfo InstanceDataBufferInfo{};
-            viewProjectionBufferInfo.buffer = UniformBuffer->UniformBuffers[i];
-            viewProjectionBufferInfo.offset = 0;
-            viewProjectionBufferInfo.range = sizeof(InstanceDataUBO);*/
-
             size_t ubsSz = UniformBuffers.size();
             std::vector<VkDescriptorBufferInfo> uniformBuffers(ubsSz);
             for (int j = 0; j < ubsSz; j++)
@@ -573,19 +601,22 @@ namespace VulkanRenderer
                     .offset = 0,
                     .range = UniformBuffers[j]->Size
                 };
-             /*   uniformBuffers.push_back(VkDescriptorBufferInfo
-                {  
-                    .buffer = UniformBuffers[j]->UniformBuffers[i],
-                    .offset = 0,
-                    .range = UniformBuffers[j]->Size
-                });*/
             }
 
             size_t imgsSz = Images.size();
-            std::vector<VkDescriptorImageInfo> imageDescriptors(imgsSz);
+            //std::vector<VkDescriptorImageInfo> imageDescriptors(imgsSz);
+            std::vector<VkDescriptorImageInfo> imageDescriptors(MaxTextures);
             for (int j = 0; j < imgsSz; j++)
             {
                 imageDescriptors[j] = Images[j]->descriptor;
+            }
+
+            if (imgsSz < MaxTextures)
+            {
+                for (int j = imgsSz; j < MaxTextures; j++)
+                {
+                    imageDescriptors[j] = Images[0]->descriptor; //use this as a test default
+                }
             }
 
             //here we create the uniform buffer which shaders use
@@ -605,16 +636,7 @@ namespace VulkanRenderer
                 descriptorWrites[j].pBufferInfo = &uniformBuffers[j]; //& viewProjectionBufferInfo;
             }
 
-            /*descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = _descriptorSets[i];
-            descriptorWrites[0].dstBinding = 0;
-            descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrites[0].descriptorCount = 1;
-            descriptorWrites[0].pBufferInfo = &viewProjectionBufferInfo;*/
-
             //texture sampler(s) for shader use
-            //for (int j = 1, k = 0; j < sz; j++, k++)
             for (int j = ubsSz, k = 0; j < sz; j++, k++)
             {
                 descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -622,12 +644,34 @@ namespace VulkanRenderer
                 descriptorWrites[j].dstBinding = ubsSz; //1; //next available binding after ubs
                 descriptorWrites[j].dstArrayElement = 0;
                 descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites[j].descriptorCount = 1;
-                descriptorWrites[j].pImageInfo = &imageDescriptors[k]; //&imageInfo;
+                descriptorWrites[j].descriptorCount = MaxTextures; //1;
+                //descriptorWrites[j].pImageInfo = &imageDescriptors[k]; //&imageInfo;
+                descriptorWrites[j].pImageInfo = imageDescriptors.data();
             }
 
             vkUpdateDescriptorSets(Device->Device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
+    }
+
+    void VulkanContext::RenderQuad(const glm::mat4& transform, const glm::vec4& color)
+    {
+        //constexpr size_t quadVertexCount = 4;
+        const float textureIndex = 0.0f; // White Texture
+        constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+        const float tilingFactor = 1.0f;
+
+        for (size_t i = 0; i < 4; i++)
+        {
+            size_t index = QuadVertexCount + i;
+            QuadVertices[CurrentFrame][index].pos = transform * _quadVertexPositions[i];
+            QuadVertices[CurrentFrame][index].color = color;
+            QuadVertices[CurrentFrame][index].texCoord = textureCoords[i];
+            QuadVertices[CurrentFrame][index].texIndex = textureIndex;
+            QuadVertices[CurrentFrame][index].tilingFactor = tilingFactor;
+        }
+
+        QuadVertexCount += 4;
+        QuadIndexCount += 6;
     }
 
     std::vector<const char*> VulkanContext::GetRequiredExtensions()
@@ -868,7 +912,7 @@ namespace VulkanRenderer
 
         VkDescriptorSetLayoutBinding samplerLayoutBinding{};
         samplerLayoutBinding.binding = uniformBuffersCount; //1; //next available binding after uniform buffers
-        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.descriptorCount = MaxTextures; //1;
         samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         samplerLayoutBinding.pImmutableSamplers = nullptr;
         samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -1077,8 +1121,8 @@ namespace VulkanRenderer
 
     void VulkanContext::CreateGraphicsPipeline2D()
     {
-        auto vertShaderCode = ReadFile("shaders/vert.spv");
-        auto fragShaderCode = ReadFile("shaders/frag.spv");
+        auto vertShaderCode = ReadFile("shaders/2dvert.spv");
+        auto fragShaderCode = ReadFile("shaders/2dfrag.spv");
 
         VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -1182,7 +1226,7 @@ namespace VulkanRenderer
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-        if (vkCreatePipelineLayout(Device->Device, &pipelineLayoutInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(Device->Device, &pipelineLayoutInfo, nullptr, &_pipelineLayout2D) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout!");
         }
@@ -1204,7 +1248,7 @@ namespace VulkanRenderer
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(Device->Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_graphicsPipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(Device->Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_GraphicsPipeline2D) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create graphics pipeline!");
         }

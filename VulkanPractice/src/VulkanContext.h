@@ -46,6 +46,8 @@ namespace VulkanRenderer
 
 		VkPipelineLayout _pipelineLayout;
 		VkPipeline _graphicsPipeline;
+
+		VkPipelineLayout _pipelineLayout2D;
 		VkPipeline _GraphicsPipeline2D;
 
 		VkDescriptorSetLayout _descriptorSetLayout;
@@ -113,6 +115,8 @@ namespace VulkanRenderer
 		uint32_t CurrentFrame = 0;
 		bool FrameBufferResized;
 
+		const uint32_t MaxTextures = 32;
+
 		VkInstance Instance;
 		VkSurfaceKHR Surface;
 
@@ -128,12 +132,31 @@ namespace VulkanRenderer
 		std::vector<VulkanModel*> Models;
 		std::vector<VulkanImage*> Images;
 
+		//Quad rendering
+		glm::vec4 _quadVertexPositions[4];
+
+		std::vector<VulkanVertexBuffer> QuadVertexBuffer;
+		std::vector<Vertex*> QuadVertices;
+		uint32_t QuadVertexCount;
+		uint32_t QuadIndexCount;
+
+
+		VulkanIndexBuffer QuadIndexBuffer;
+
+		uint32_t _maxQuadVertices;
+		uint32_t _maxQuadIndices;
+
+
+
 		VulkanContext(GLFWwindow* window, const std::string& applicationName, const std::string& engineName);
 		~VulkanContext();
 
+		void InitQuadRendering();
 
 		//DescriptorSets
 		void CreateDescriptorSets();
+
+		void RenderQuad(const glm::mat4& transform, const glm::vec4& color);
 
 		void DrawFrame(Input& input, GLFWwindow* window);
 

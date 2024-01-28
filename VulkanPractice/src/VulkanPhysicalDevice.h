@@ -15,6 +15,7 @@ namespace VulkanRenderer
 		
 		bool IsDeviceSuitable(const VkPhysicalDevice& device, VkSurfaceKHR& surface);
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
+		void GetProperties();
 		VulkanQueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice& device, VkSurfaceKHR& surface);
 		bool CheckDeviceExtensionSupport(const VkPhysicalDevice& device);
 		VulkanSwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& device, VkSurfaceKHR& surface);
@@ -24,6 +25,7 @@ namespace VulkanRenderer
 		//VulkanSwapChainSupportDetails SwapChainDetails;
 		const std::vector<const char*> DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		VkSampleCountFlagBits MsaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		//uint32_t MaxTextures;
 
 		VulkanPhysicalDevice(VkInstance& instance, VkSurfaceKHR& surface);
 		VulkanSwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR& surface);

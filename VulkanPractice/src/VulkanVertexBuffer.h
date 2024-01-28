@@ -14,6 +14,7 @@ namespace VulkanRenderer
 
 		VulkanVertexBuffer();
 		void LoadVertices(std::vector<Vertex>& vertices, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
+		void LoadVertices(Vertex* vertices, size_t verticeCount, VkPhysicalDevice& physicalDevice, VkDevice& device, VkQueue& graphicsQueue, VkCommandPool& commandPool);
 		void Dispose(VkDevice& device);
 	};
 }
