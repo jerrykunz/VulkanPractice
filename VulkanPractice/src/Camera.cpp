@@ -29,6 +29,7 @@ void Camera::updateViewMatrix()
 	}
 
 	//position of the camera
+	//viewpos seems to be correct after this, but when setting the position, it still goes inverted and wrong
 	viewPos = glm::vec4(position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
 
 	updated = true;
@@ -56,6 +57,10 @@ void Camera::setPerspective(float fov, float aspect, float znear, float zfar)
 	this->znear = znear;
 	this->zfar = zfar;
 	matrices.perspective = glm::perspective(glm::radians(fov), aspect, znear, zfar);
+
+	//GLM was originally designed for OpenGL, where the Y coordinate of the clip coordinates is inverted.
+	//The easiest way to compensate for that is to flip the sign on the scaling factor of the Y axis in the projection matrix.
+	//If you don't do this, then the image will be rendered upside down.
 	matrices.perspective[1][1] *= flipY;
 }
 

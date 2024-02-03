@@ -345,7 +345,8 @@ namespace VulkanRenderer
 
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
+        //we can do this after viewport and scissor
+        //vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -360,6 +361,8 @@ namespace VulkanRenderer
         scissor.offset = { 0, 0 };
         scissor.extent = _swapChain->SwapChainExtent;
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
@@ -388,8 +391,11 @@ namespace VulkanRenderer
 
         //2d quad rendering
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _GraphicsPipeline2D);
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+        //not necessary
+        //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+        //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout2D, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
         QuadVertexBuffer[CurrentFrame].LoadVertices(QuadVertices[CurrentFrame],
@@ -411,6 +417,7 @@ namespace VulkanRenderer
                          0,
                          0,
                          0);
+
         QuadVertexCount = 0;
         QuadIndexCount = 0;
 
