@@ -135,6 +135,7 @@ int main()
     camera.flipY = -1.0f;
     camera.setPerspective(60.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 512.0f);
     //1.0f to x means we go left from origin even we should go right, this sucks absolute balls and I don't know how to fix it
+    //looks like this is now fixed with some '-'s added/removed in camera.cpp
     camera.setTranslation(glm::vec3(1.0f, 0.0f, -2.0f));
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.movementSpeed = 3.0f;

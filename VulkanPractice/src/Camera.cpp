@@ -17,7 +17,8 @@ void Camera::updateViewMatrix()
 	translation.y *= flipY;
 	transM = glm::translate(glm::mat4(1.0f), translation);*/
 
-	transM = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y * flipY, position.z));
+	//added '-' to x, because that's how it works the right way
+	transM = glm::translate(glm::mat4(1.0f), glm::vec3(-position.x, position.y * flipY, position.z));
 	if (type == CameraType::firstperson)
 	{
 		//used to translate world coords to view coords
@@ -30,7 +31,9 @@ void Camera::updateViewMatrix()
 
 	//position of the camera
 	//viewpos seems to be correct after this, but when setting the position, it still goes inverted and wrong
-	viewPos = glm::vec4(position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+	//no longer needed
+	//viewPos = glm::vec4(position, 0.0f) * glm::vec4(-1.0f, 1.0f, -1.0f, 1.0f);
+	viewPos = glm::vec4(position, 0.0f);
 
 	updated = true;
 }
@@ -178,14 +181,16 @@ void Camera::update(float deltaTime)
 		if (moveLeftRight || moveBackwardForward)
 		{
 			glm::vec3 camFront;
-			camFront.x = -cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
+			//first -cos(x) changed to cos(x)
+			camFront.x = cos(glm::radians(rotation.x)) * sin(glm::radians(rotation.y));
 			camFront.y = sin(glm::radians(rotation.x));
 			camFront.z = cos(glm::radians(rotation.x)) * cos(glm::radians(rotation.y));
 			camFront = glm::normalize(camFront);
 
 			if (moveLeftRight)
 			{
-				position += (float)moveLeftRight * glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
+				//added - to moveLeftRight
+				position += (float)-moveLeftRight * glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * moveSpeed;
 			}
 
 			if (moveBackwardForward)

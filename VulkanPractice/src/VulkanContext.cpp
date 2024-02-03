@@ -192,7 +192,7 @@ namespace VulkanRenderer
     //    return viewMatrix;
     //}
 
-    void VulkanContext::DrawFrame(Input& input, GLFWwindow* window)
+    void VulkanContext::DrawFrame(GLFWwindow* window)
     {
         vkWaitForFences(Device->Device, 1, &_inFlightFences[CurrentFrame], VK_TRUE, UINT64_MAX);
 
@@ -526,48 +526,25 @@ namespace VulkanRenderer
                                              _swapChain->SwapChainImageFormat);
     }
 
-    void VulkanContext::CreateDescriptorPool(/*const std::vector<VulkanUniformBuffer*>& uniformBuffers*/)
+    void VulkanContext::CreateDescriptorPool()
     {
         size_t sz = UniformBuffers.size();
 
         std::vector<VkDescriptorPoolSize> poolSizes{};
-        poolSizes.reserve(sz + 1);
+        poolSizes.resize(sz + 1);
 
         for (int i = 0; i < sz; i++)
         {
-            poolSizes.push_back(VkDescriptorPoolSize
-                                {
-                                    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight)
-                                });
-
-            poolSizes.push_back(VkDescriptorPoolSize
-                                {
-                                    .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                    .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight)
-                                });
-
-
-           /* poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            poolSizes[i].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);*/
+            poolSizes[i].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            poolSizes[i].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);
         }
 
-        poolSizes.push_back(VkDescriptorPoolSize
-            {
-                .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                //Added Maxtextures here, previously just _maxFramesInFlight, so 1 texture slot per frame
-                .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight * MaxTextures) 
-            });
-
-
-    /*    poolSizes[sz].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[sz].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);*/
-
-        /*std::array<VkDescriptorPoolSize, 2> poolSizes{};
-        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSizes[0].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);
-        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = static_cast<uint32_t>(_maxFramesInFlight);*/
+        poolSizes[sz] = VkDescriptorPoolSize
+                        {
+                            .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            //Added Maxtextures here, previously just _maxFramesInFlight, so 1 texture slot per frame
+                            .descriptorCount = static_cast<uint32_t>(_maxFramesInFlight * MaxTextures)
+                        };
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1176,7 +1153,8 @@ namespace VulkanRenderer
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        //we want this clockwise, as our quad rendering is in that order
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
         VkPipelineMultisampleStateCreateInfo multisampling{};

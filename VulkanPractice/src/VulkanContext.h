@@ -158,7 +158,7 @@ namespace VulkanRenderer
 
 		void RenderQuad(const glm::mat4& transform, const glm::vec4& color);
 
-		void DrawFrame(Input& input, GLFWwindow* window);
+		void DrawFrame(GLFWwindow* window);
 
 		void CleanUp();
 
