@@ -116,6 +116,7 @@ namespace VulkanRenderer
 		bool FrameBufferResized;
 
 		const uint32_t MaxTextures = 32;
+		uint32_t TextureIndex = 0;
 
 		VkInstance Instance;
 		VkSurfaceKHR Surface;

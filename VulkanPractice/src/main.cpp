@@ -111,6 +111,14 @@ int main()
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     vulkanContext.Images.push_back(&texture);
+
+    uint32_t white = 0xffffffff;
+    VulkanRenderer::VulkanImage texture2(&white,
+                                         vulkanContext.PhysicalDevice->Device,
+                                         *vulkanContext.Device,
+                                         vulkanContext.CommandPool,
+                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    vulkanContext.Images.push_back(&texture2);
     
 
     VulkanRenderer::VulkanModel model("models/viking_room.obj",
@@ -237,7 +245,7 @@ int main()
             transformMatrix = glm::scale(transformMatrix, glm::vec3(scaleFactor, scaleFactor, 1.0f));
             vulkanContext.RenderQuad(transformMatrix, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-            vulkanContext.DrawFrame(input, window);
+            vulkanContext.DrawFrame(window);
         }
     }
 

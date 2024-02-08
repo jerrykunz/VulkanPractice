@@ -147,51 +147,6 @@ namespace VulkanRenderer
                                     CommandPool);
     }
 
-    //glm::mat4 VulkanContext::CreateViewMatrix(float pitch, float yaw, float roll, glm::vec3 position)
-    //{
-    //   /* glm::vec3 front;
-    //    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //    front.y = sin(glm::radians(pitch));
-    //    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //    cameraFront = glm::normalize(front);*/
-
-
-    //    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
-    //    cameraFront.x = -cos(glm::radians(yaw)) * sin(glm::radians(pitch));
-    //    cameraFront.y = sin(glm::radians(yaw));
-    //    cameraFront.z = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    //    cameraFront = glm::normalize(cameraFront);
-
-    //    if (pitch != 0.f || yaw != 0.f)
-    //    {
-    //        int a = 3;
-    //    }
-
-    //    viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),  cameraFront, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    //    // Create an identity matrix
-    //    //glm::mat4 viewMatrix = glm::mat4(1.0f);
-
-    //    // Apply roll (rotation around the forward axis)
-    //    //viewMatrix = glm::rotate(viewMatrix, roll, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    //    // Apply pitch (rotation around the right axis)
-    //    //viewMatrix = glm::rotate(viewMatrix, pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-
-    //    // Apply yaw (rotation around the up axis)
-    //    //viewMatrix = glm::rotate(viewMatrix, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    //    // Apply translation to the camera position
-    //    //viewMatrix = glm::translate(viewMatrix, -position);
-
-
-    //    /*_pitch += pitch;
-    //    _yaw += yaw;
-    //    std::cout << _pitch << " " << _yaw << std::endl;*/
-
-    //    return viewMatrix;
-    //}
-
     void VulkanContext::DrawFrame(GLFWwindow* window)
     {
         vkWaitForFences(Device->Device, 1, &_inFlightFences[CurrentFrame], VK_TRUE, UINT64_MAX);
@@ -599,7 +554,7 @@ namespace VulkanRenderer
             {
                 for (int j = imgsSz; j < MaxTextures; j++)
                 {
-                    imageDescriptors[j] = Images[0]->descriptor; //use this as a test default
+                    imageDescriptors[j] = Images[1]->descriptor; //use this as a test default
                 }
             }
 
@@ -640,7 +595,7 @@ namespace VulkanRenderer
     void VulkanContext::RenderQuad(const glm::mat4& transform, const glm::vec4& color)
     {
         //constexpr size_t quadVertexCount = 4;
-        const float textureIndex = 0.0f; // White Texture
+        const float textureIndex = 1.0f; // White Texture
         constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
         const float tilingFactor = 1.0f;
 

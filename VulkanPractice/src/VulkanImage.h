@@ -40,6 +40,7 @@ namespace VulkanRenderer
 		VkDescriptorImageInfo descriptor;
 
 		VulkanImage(const std::string& path, VkPhysicalDevice& physicalDevice, VulkanDevice& device, VkCommandPool& commandPool, VkImageLayout imageLayout);
+		VulkanImage(uint32_t* color, VkPhysicalDevice& physicalDevice, VulkanDevice& device, VkCommandPool& commandPool, VkImageLayout imageLayout);
 		~VulkanImage();
 	};
 
