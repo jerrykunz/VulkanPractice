@@ -8,10 +8,11 @@ class GameObject
 public:
 	bool Visible;
 	glm::mat4 Transform;
-	VulkanRenderer::VulkanModel* Model;
+	VulkanRenderer::VulkanImage* Texture;
+	glm::vec4 Color;
 	float RotationMultiplier;
 
 	//GameObject();
-	void Update();
-	void Render(VulkanRenderer::InstanceDataUBO* ubo);
+	void Update(float deltaTime);
+	void Render(VulkanRenderer::VulkanContext& vulkanContext);
 };

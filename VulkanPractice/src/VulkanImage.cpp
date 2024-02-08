@@ -20,7 +20,7 @@ namespace VulkanRenderer
 	{
         _device = &device.Device;
 
-        descriptor.imageLayout = imageLayout;
+        Descriptor.imageLayout = imageLayout;
 
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -31,6 +31,9 @@ namespace VulkanRenderer
         {
             throw std::runtime_error("failed to load texture image!");
         }
+
+        //TEST
+        //FinishImage(pixels, texWidth, texHeight, physicalDevice, device, commandPool, imageLayout);
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -66,13 +69,16 @@ namespace VulkanRenderer
     {
         _device = &device.Device;
 
-        descriptor.imageLayout = imageLayout;
+        Descriptor.imageLayout = imageLayout;
 
         int texWidth = 1;
         int texHeight = 1;
 
         VkDeviceSize imageSize = texWidth * texHeight * 4;
         _mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
+        //FinishImage((unsigned char*)&color, texWidth, texHeight, physicalDevice, device, commandPool, imageLayout);
+
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -83,6 +89,51 @@ namespace VulkanRenderer
         memcpy(data, color, static_cast<size_t>(imageSize));
         vkUnmapMemory(device.Device, stagingBufferMemory);
 
+
+        CreateImage(physicalDevice, device.Device, texWidth, texHeight, _mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, TextureImage, TextureImageMemory);
+
+        TransitionImageLayout(device, commandPool, TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, _mipLevels);
+        CopyBufferToImage(device, commandPool, stagingBuffer, TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+        //transitioned to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL while generating mipmaps
+
+        vkDestroyBuffer(device.Device, stagingBuffer, nullptr);
+        vkFreeMemory(device.Device, stagingBufferMemory, nullptr);
+
+        GenerateMipmaps(physicalDevice, device, commandPool, TextureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, _mipLevels);
+
+        CreateImageView(TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, _mipLevels);
+        CreateTextureSampler(physicalDevice);
+    }
+
+    void VulkanImage::FinishImage(unsigned char* pixels,
+                                  int texWidth,
+                                  int texHeight,
+                                  VkPhysicalDevice& physicalDevice,
+                                  VulkanDevice& device,
+                                  VkCommandPool& commandPool,
+                                  VkImageLayout imageLayout)
+    {
+        _device = &device.Device;
+
+        Descriptor.imageLayout = imageLayout;
+
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+        _mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        CreateBuffer(physicalDevice, device.Device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+        void* data;
+        vkMapMemory(device.Device, stagingBufferMemory, 0, imageSize, 0, &data);
+        memcpy(data, pixels, static_cast<size_t>(imageSize));
+        vkUnmapMemory(device.Device, stagingBufferMemory);
+
+        //larger than a single pixel, then it was probably loaded from image
+        if (imageSize > 4)
+        {
+            stbi_image_free(pixels);
+        }
 
         CreateImage(physicalDevice, device.Device, texWidth, texHeight, _mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, TextureImage, TextureImageMemory);
 
@@ -127,7 +178,7 @@ namespace VulkanRenderer
             throw std::runtime_error("failed to create texture sampler!");
         }
 
-        descriptor.sampler = TextureSampler;
+        Descriptor.sampler = TextureSampler;
     }
 
     void VulkanImage::GenerateMipmaps(VkPhysicalDevice& physicalDevice, VulkanDevice& device, VkCommandPool& commandPool, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels) {
@@ -428,7 +479,7 @@ namespace VulkanRenderer
             throw std::runtime_error("failed to create texture image view!");
         }
 
-        descriptor.imageView = TextureImageView;
+        Descriptor.imageView = TextureImageView;
     }
 
 }

@@ -103,38 +103,12 @@ int main()
 
     glfwSetCursorPosCallback(window, MouseCallback);
 
-
     VulkanRenderer::VulkanImage texture("textures/viking_room.png",
                                         vulkanContext.PhysicalDevice->Device,
                                         *vulkanContext.Device,
                                         vulkanContext.CommandPool,
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    vulkanContext.Images.push_back(&texture);
-
-    uint32_t white = 0xffffffff;
-    VulkanRenderer::VulkanImage texture2(&white,
-                                         vulkanContext.PhysicalDevice->Device,
-                                         *vulkanContext.Device,
-                                         vulkanContext.CommandPool,
-                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    vulkanContext.Images.push_back(&texture2);
-    
-
-    VulkanRenderer::VulkanModel model("models/viking_room.obj",
-                                      texture,
-                                      vulkanContext.PhysicalDevice->Device,
-                                      vulkanContext.Device->Device, 
-                                      vulkanContext.Device->GraphicsQueue,
-                                      vulkanContext.CommandPool);
-    vulkanContext.Models.push_back(&model);
-    VulkanRenderer::VulkanModel model2("models/viking_room.obj",
-        texture,
-        vulkanContext.PhysicalDevice->Device,
-        vulkanContext.Device->Device,
-        vulkanContext.Device->GraphicsQueue,
-        vulkanContext.CommandPool);
-    vulkanContext.Models.push_back(&model2);
+  
 
     std::vector<GameObject> objects;
 
@@ -142,8 +116,6 @@ int main()
     camera.type = Camera::CameraType::firstperson;
     camera.flipY = -1.0f;
     camera.setPerspective(60.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 512.0f);
-    //1.0f to x means we go left from origin even we should go right, this sucks absolute balls and I don't know how to fix it
-    //looks like this is now fixed with some '-'s added/removed in camera.cpp
     camera.setTranslation(glm::vec3(1.0f, 0.0f, -2.0f));
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.movementSpeed = 3.0f;
@@ -151,19 +123,22 @@ int main()
     GameObject object1
     {
         .Visible = true,
-        .Transform = glm::mat4(),
-        .Model = &model,
+        .Transform = glm::mat4(1.0f),
+        .Texture = nullptr, //vulkanContext.WhiteTexture, //&texture,
+        .Color = glm::vec4(1.0f, 0.0f, 0.0f, 0.1f),
         .RotationMultiplier = 1.0f,        
     };
     objects.push_back(object1);
 
     GameObject object2
     {
-        .Visible = true,
-        .Transform = glm::mat4(),
-        .Model = &model2,
+        .Visible = true,        
+        .Transform = glm::mat4(1.0f),       
+        .Texture = &texture,
+        .Color = glm::vec4(1.0f,1.0f,1.0f,1.0f),
         .RotationMultiplier = 0.1f,
     };
+    object2.Transform = glm::translate(object2.Transform, glm::vec3(0.0f, 0.0f, -1.1f));
     objects.push_back(object2);
     
     //Do this now that we have all the images/models set up
@@ -204,46 +179,25 @@ int main()
             //get instance visibility
             for (GameObject& obj : objects)
             {
-                obj.Update();
-            }
-
-            //Update instanceDataUBO allocation according to visible instances
-            int modelCount = vulkanContext.Models.size();
-            int index = 0;
-            for (int i = 0; i < modelCount; i++)
-            {
-                //get count of instances marked as visible in GameObject.Update()
-                uint8_t instanceCount = vulkanContext.Models[i]->instanceCount;
-
-                //no visible instances, skip altogether
-                //not needed I think
-               /* if (instanceCount <= 0)
-                    continue;*/
-
-                    //set range of instances
-                vulkanContext.Models[i]->instancesEnd = index + instanceCount;
-                vulkanContext.Models[i]->instancesIndex = index;
-
-                //update index for next model
-                index = index + instanceCount;
+                obj.Update(deltaTime);
             }
 
             auto viewProjUBO = vulkanContext.GetViewProjectionUBO();
             viewProjUBO->proj = camera.matrices.perspective;
             //viewProjUBO->proj[1][1] *= -1;
-            viewProjUBO->view = camera.matrices.view;
-           
+            viewProjUBO->view = camera.matrices.view;           
 
-            auto instanceDataUBO = vulkanContext.GetInstanceDataUBO();
             for (GameObject& obj : objects)
             {
-                obj.Render(instanceDataUBO);
+                obj.Render(vulkanContext);
             }
 
-            glm::mat4 transformMatrix(1.0f);
-            float scaleFactor = 100.0f;  
+            vulkanContext.UpdateTextureDescriptorSets();
+           //vulkanContext.CreateDescriptorSets();
+           /* glm::mat4 transformMatrix(1.0f);
+            float scaleFactor = 1.0f;  
             transformMatrix = glm::scale(transformMatrix, glm::vec3(scaleFactor, scaleFactor, 1.0f));
-            vulkanContext.RenderQuad(transformMatrix, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            vulkanContext.RenderQuad(transformMatrix, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));*/
 
             vulkanContext.DrawFrame(window);
         }

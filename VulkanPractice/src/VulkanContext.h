@@ -34,6 +34,9 @@ namespace VulkanRenderer
 		const std::vector<const char*> _validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		int _maxFramesInFlight;
 
+		const uint32_t _maxTextures = 32;
+		uint32_t _textureIndex = 0;
+		std::vector<VulkanImage*> _textureSlots;
 
 		VkDebugUtilsMessengerEXT _debugMessenger;	
 
@@ -43,10 +46,6 @@ namespace VulkanRenderer
 
 		//Vulkan structs
 		VkRenderPass _renderPass;
-
-		VkPipelineLayout _pipelineLayout;
-		VkPipeline _graphicsPipeline;
-
 		VkPipelineLayout _pipelineLayout2D;
 		VkPipeline _GraphicsPipeline2D;
 
@@ -89,7 +88,6 @@ namespace VulkanRenderer
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
 		//Gfxpipeline
-		void CreateGraphicsPipeline();
 		void CreateGraphicsPipeline2D();
 
 		//cmdpool
@@ -115,8 +113,7 @@ namespace VulkanRenderer
 		uint32_t CurrentFrame = 0;
 		bool FrameBufferResized;
 
-		const uint32_t MaxTextures = 32;
-		uint32_t TextureIndex = 0;
+		
 
 		VkInstance Instance;
 		VkSurfaceKHR Surface;
@@ -130,7 +127,6 @@ namespace VulkanRenderer
 		VulkanUniformBuffer* InstanceDataUniformBuffer;
 
 		std::vector<VulkanUniformBuffer*> UniformBuffers;
-		std::vector<VulkanModel*> Models;
 		std::vector<VulkanImage*> Images;
 
 		//Quad rendering
@@ -147,6 +143,7 @@ namespace VulkanRenderer
 		uint32_t _maxQuadVertices;
 		uint32_t _maxQuadIndices;
 
+		VulkanImage* WhiteTexture;
 
 
 		VulkanContext(GLFWwindow* window, const std::string& applicationName, const std::string& engineName);
@@ -156,8 +153,10 @@ namespace VulkanRenderer
 
 		//DescriptorSets
 		void CreateDescriptorSets();
+		void UpdateTextureDescriptorSets();
 
 		void RenderQuad(const glm::mat4& transform, const glm::vec4& color);
+		void RenderQuad(const glm::mat4& transform, VulkanImage& texture, float tilingFactor, const glm::vec4& tintColor, glm::vec2 uv0, glm::vec2 uv1);
 
 		void DrawFrame(GLFWwindow* window);
 
