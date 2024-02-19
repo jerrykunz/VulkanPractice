@@ -68,10 +68,10 @@ static Input GetInput(GLFWwindow* window)
     int up = glfwGetKey(window, GLFW_KEY_SPACE);
     int down = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
 
-    if (up || down)
+   /* if (up || down)
     {
         int a = 3;
-    }
+    }*/
 
     return Input
     {
@@ -192,7 +192,9 @@ int main()
                 obj.Render(vulkanContext);
             }
 
-            vulkanContext.UpdateTextureDescriptorSets();
+            //causes error when here
+            //vulkanContext.UpdateTextureDescriptorSets();
+
            //vulkanContext.CreateDescriptorSets();
            /* glm::mat4 transformMatrix(1.0f);
             float scaleFactor = 1.0f;  

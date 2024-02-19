@@ -330,6 +330,9 @@ namespace VulkanRenderer
         {
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _GraphicsPipeline2D);
 
+            //moved here, still causes errors
+            UpdateTextureDescriptorSets();
+
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout2D, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
             QuadVertexBuffer[CurrentFrame].LoadVertices(QuadVertices[CurrentFrame],
@@ -577,34 +580,30 @@ namespace VulkanRenderer
 
     void VulkanContext::UpdateTextureDescriptorSets()
     {
-        for (size_t i = 0; i < _maxFramesInFlight; i++)
+        std::vector<VkDescriptorImageInfo> imageDescriptors(_maxTextures);
+        for (int j = 0; j < _textureIndex; j++)
         {
-            std::vector<VkDescriptorImageInfo> imageDescriptors(_maxTextures);
-            for (int j = 0; j < _textureIndex; j++)
-            {
-                imageDescriptors[j] = _textureSlots[j]->Descriptor;
-            }
-
-            if (_textureIndex < _maxTextures)
-            {
-                for (int j = _textureIndex; j < _maxTextures; j++)
-                {
-                    imageDescriptors[j] = _textureSlots[0]->Descriptor; //use this as a test default
-                }
-            }
-
-            std::vector<VkWriteDescriptorSet> descriptorWrites(1);
-            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = _descriptorSets[i];
-            descriptorWrites[0].dstBinding = 2; //next available binding after ubs
-            descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[0].descriptorCount = _maxTextures;
-            descriptorWrites[0].pImageInfo = imageDescriptors.data();
-            
-
-            vkUpdateDescriptorSets(Device->Device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+            imageDescriptors[j] = _textureSlots[j]->Descriptor;
         }
+
+        if (_textureIndex < _maxTextures)
+        {
+            for (int j = _textureIndex; j < _maxTextures; j++)
+            {
+                imageDescriptors[j] = _textureSlots[0]->Descriptor; //use this as a test default
+            }
+        }
+
+        std::vector<VkWriteDescriptorSet> descriptorWrites(1);
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = _descriptorSets[CurrentFrame]; //Only updates the currentframe, otherwise errors accessing data that's being rendered
+        descriptorWrites[0].dstBinding = 2; //next available binding after ubs
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[0].descriptorCount = _maxTextures;
+        descriptorWrites[0].pImageInfo = imageDescriptors.data();
+
+        vkUpdateDescriptorSets(Device->Device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
 
     void VulkanContext::RenderQuad(const glm::mat4& transform, const glm::vec4& color)
