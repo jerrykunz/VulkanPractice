@@ -16,18 +16,19 @@ namespace VulkanRenderer
 		VkShaderModule CreateShaderModule(VkDevice& device, const std::vector<char>& code);
 
 	public:
-		VkPipeline* Pipeline;
-		VkPipelineLayout* PipelineLayout;
+		VkPipeline Pipeline;
+		VkPipelineLayout PipelineLayout;
 
 		VulkanPipeline(VkDevice& device,
-					   VkRenderPass renderPass,
+					   VkRenderPass& renderPass,
 					   VkSampleCountFlagBits& msaaSamples,
 					   VkDescriptorSetLayout& descriptorSetLayout,
 					   const std::string& vertShader,
 					   const std::string& fragShader,
-					   VkVertexInputBindingDescription& bindingDescription,
-					   VkVertexInputAttributeDescription* attributeDescriptions,
-					   size_t attributeCount);
+					   const VkVertexInputBindingDescription& bindingDescription,
+					   std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
+					   VkPrimitiveTopology topology,
+					   VkPolygonMode polygonMode);
 		void Dispose(VkDevice& device);
 	};
 

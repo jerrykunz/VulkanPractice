@@ -1,5 +1,5 @@
 #include "VulkanContext.h"
-#include "VulkanPushConstants.h"
+
 
 
 
@@ -70,7 +70,31 @@ namespace VulkanRenderer
         UniformBuffers.push_back(InstanceDataUniformBuffer);
 
         CreateDescriptorSetLayout();
-        CreateGraphicsPipeline2DQuad();
+        //CreateGraphicsPipeline2DQuad();
+
+        _quadPipeline = new VulkanPipeline(Device->Device,
+                                           _renderPass,
+                                           PhysicalDevice->MsaaSamples,
+                                           _descriptorSetLayout,
+                                           "shaders/quad2dvert.spv",
+                                           "shaders/quad2dfrag.spv",
+                                           QuadVertex::getBindingDescription(),
+                                           QuadVertex::getAttributeDescriptions2(),
+                                           VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+                                           VK_POLYGON_MODE_FILL);
+
+        _linePipeline = new VulkanPipeline(Device->Device,
+                                           _renderPass,
+                                           PhysicalDevice->MsaaSamples,
+                                           _descriptorSetLayout,
+                                           "shaders/line2dvert.spv",
+                                           "shaders/line2dfrag.spv",
+                                           LineVertex::getBindingDescription(),
+                                           LineVertex::getAttributeDescriptions(),
+                                           VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+                                           VK_POLYGON_MODE_FILL);
+
+
         CreateCommandPool();
 
         _frameBuffer = new VulkanFrameBuffer(*PhysicalDevice,
@@ -89,6 +113,8 @@ namespace VulkanRenderer
         CreateCommandBuffers();
         CreateSyncObjects();
         InitQuadRendering();
+        InitLineRendering();
+
         //test
        /* glm::vec3 _position(1.0f, 1.0f, 1.0f);
         prevCameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -148,6 +174,40 @@ namespace VulkanRenderer
             offset += 4;
         }
         QuadIndexBuffer.LoadIndices(quadIndices,
+                                    PhysicalDevice->Device,
+                                    Device->Device,
+                                    Device->GraphicsQueue,
+                                    CommandPool);
+    }
+
+    void VulkanContext::InitLineRendering()
+    {
+        _maxLineVertices = 20000;
+        _maxLineIndices = 20000;
+
+        LineVertexCount = 0;
+        LineIndexCount = 0;
+
+        LineVertexBuffer.resize(_maxFramesInFlight);
+        LineVertices.resize(_maxFramesInFlight);
+
+        for (int i = 0; i < _maxFramesInFlight; i++)
+        {
+            LineVertexBuffer[i] = VulkanVertexBuffer();
+            LineVertices[i] = new LineVertex[_maxLineVertices];
+        }
+
+
+
+        LineIndexBuffer = VulkanIndexBuffer();
+        std::vector<uint32_t> lineIndices(_maxLineIndices);
+
+        for (int i = 0; i < _maxLineIndices; i++)
+        {
+            lineIndices[i] = i;
+        }
+
+        LineIndexBuffer.LoadIndices(lineIndices,
                                     PhysicalDevice->Device,
                                     Device->Device,
                                     Device->GraphicsQueue,
@@ -236,8 +296,10 @@ namespace VulkanRenderer
         delete _swapChain;
         _swapChain = nullptr;
 
-        vkDestroyPipeline(Device->Device, _GraphicsPipeline2DQuad, nullptr);
-        vkDestroyPipelineLayout(Device->Device, _pipelineLayout2DQuad, nullptr);
+        /*vkDestroyPipeline(Device->Device, _GraphicsPipeline2DQuad, nullptr);
+        vkDestroyPipelineLayout(Device->Device, _pipelineLayout2DQuad, nullptr);*/
+        _quadPipeline->Dispose(Device->Device);
+
         vkDestroyRenderPass(Device->Device, _renderPass, nullptr);
 
         delete ViewProjectionUniformBuffer;
@@ -328,12 +390,12 @@ namespace VulkanRenderer
 
         //2D quad rendering
         {
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _GraphicsPipeline2DQuad);
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _quadPipeline->Pipeline  /*_GraphicsPipeline2DQuad*/);
 
             //moved here, still causes errors
             UpdateTextureDescriptorSets();
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout2DQuad, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _quadPipeline->PipelineLayout /*_pipelineLayout2DQuad*/, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
             QuadVertexBuffer[CurrentFrame].LoadVertices(QuadVertices[CurrentFrame],
                 QuadVertexCount,
@@ -359,6 +421,37 @@ namespace VulkanRenderer
             QuadIndexCount = 0;
         }
         //END 2D quad rendering END
+
+        //2d line rendering
+        {
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _linePipeline->Pipeline);
+
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _linePipeline->PipelineLayout, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
+
+            LineVertexBuffer[CurrentFrame].LoadVertices(LineVertices[CurrentFrame],
+                                                        LineVertexCount,
+                                                        PhysicalDevice->Device,
+                                                        Device->Device,
+                                                        Device->GraphicsQueue,
+                                                        CommandPool);
+
+            VkBuffer vertexBuffers[] = { LineVertexBuffer[CurrentFrame].VertexBuffer };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+            vkCmdBindIndexBuffer(commandBuffer, LineIndexBuffer.IndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+            vkCmdDrawIndexed(commandBuffer,
+                static_cast<uint32_t>(LineIndexCount * sizeof(uint32_t)),
+                1,
+                0,
+                0,
+                0);
+
+            LineVertexCount = 0;
+            LineIndexCount = 0;
+        }
+        //END 2D line rendering END
 
         vkCmdEndRenderPass(commandBuffer);
 
@@ -661,6 +754,17 @@ namespace VulkanRenderer
 
         QuadVertexCount += 4;
         QuadIndexCount += 6;
+    }
+
+    void VulkanContext::RenderLine(const glm::vec3 p1, const glm::vec3 p2, const glm::vec4& color1, const glm::vec4& color2)
+    {
+        LineVertices[CurrentFrame][LineVertexCount].pos = p1;
+        LineVertices[CurrentFrame][LineVertexCount++].color = color1;
+
+        LineVertices[CurrentFrame][LineVertexCount].pos = p2;
+        LineVertices[CurrentFrame][LineVertexCount++].color = color2;
+
+        LineIndexCount += 2;
     }
 
     std::vector<const char*> VulkanContext::GetRequiredExtensions()
@@ -971,7 +1075,7 @@ namespace VulkanRenderer
         }
     }
 
-    void VulkanContext::CreateGraphicsPipeline2DQuad()
+    /*void VulkanContext::CreateGraphicsPipeline2DQuad()
     {
         auto vertShaderCode = ReadFile("shaders/2dvert.spv");
         auto fragShaderCode = ReadFile("shaders/2dfrag.spv");
@@ -1108,7 +1212,7 @@ namespace VulkanRenderer
 
         vkDestroyShaderModule(Device->Device, fragShaderModule, nullptr);
         vkDestroyShaderModule(Device->Device, vertShaderModule, nullptr);
-    }
+    }*/
 
     void VulkanContext::CreateCommandBuffers() 
     {

@@ -37,14 +37,15 @@ VkShaderModule VulkanRenderer::VulkanPipeline::CreateShaderModule(VkDevice& devi
 }
 
 VulkanRenderer::VulkanPipeline::VulkanPipeline(VkDevice& device,
-                                               VkRenderPass renderPass,
+                                               VkRenderPass& renderPass,
                                                VkSampleCountFlagBits& msaaSamples,
                                                VkDescriptorSetLayout& descriptorSetLayout,
                                                const std::string& vertShader,
                                                const std::string& fragShader,
-                                               VkVertexInputBindingDescription& bindingDescription,
-                                               VkVertexInputAttributeDescription* attributeDescriptions,
-                                               size_t attributeCount)
+                                               const VkVertexInputBindingDescription& bindingDescription,
+                                               std::vector<VkVertexInputAttributeDescription> attributeDescriptions,
+                                               VkPrimitiveTopology topology,
+                                               VkPolygonMode polygonMode)
 {
     auto vertShaderCode = ReadFile(vertShader);
     auto fragShaderCode = ReadFile(fragShader);
@@ -73,13 +74,13 @@ VulkanRenderer::VulkanPipeline::VulkanPipeline(VkDevice& device,
     //auto attributeDescriptions = QuadVertex::getAttributeDescriptions();
 
     vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeCount);
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.topology = topology; //VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
     VkPipelineViewportStateCreateInfo viewportState{};
@@ -91,7 +92,7 @@ VulkanRenderer::VulkanPipeline::VulkanPipeline(VkDevice& device,
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
-    rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizer.polygonMode = polygonMode; //VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     //we want this clockwise, as our quad rendering is in that order
@@ -142,7 +143,7 @@ VulkanRenderer::VulkanPipeline::VulkanPipeline(VkDevice& device,
     pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
 
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, PipelineLayout) != VK_SUCCESS)
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
     }
@@ -159,12 +160,12 @@ VulkanRenderer::VulkanPipeline::VulkanPipeline(VkDevice& device,
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = *PipelineLayout;
+    pipelineInfo.layout = PipelineLayout;
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, Pipeline) != VK_SUCCESS)
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &Pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
@@ -175,6 +176,6 @@ VulkanRenderer::VulkanPipeline::VulkanPipeline(VkDevice& device,
 
 void VulkanRenderer::VulkanPipeline::Dispose(VkDevice& device)
 {
-    vkDestroyPipeline(device, *Pipeline, nullptr);
-    vkDestroyPipelineLayout(device, *PipelineLayout, nullptr);
+    vkDestroyPipeline(device, Pipeline, nullptr);
+    vkDestroyPipelineLayout(device, PipelineLayout, nullptr);
 }

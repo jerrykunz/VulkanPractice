@@ -11,6 +11,8 @@
 
 
 #include "VulkanPhysicalDevice.h"
+#include "VulkanPushConstants.h"
+#include "VulkanPipeLine.h"
 
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
@@ -46,8 +48,9 @@ namespace VulkanRenderer
 
 		//Vulkan structs
 		VkRenderPass _renderPass;
-		VkPipelineLayout _pipelineLayout2DQuad;
-		VkPipeline _GraphicsPipeline2DQuad;
+
+		//VkPipelineLayout _pipelineLayout2DQuad;
+		//VkPipeline _GraphicsPipeline2DQuad;
 
 		VkDescriptorSetLayout _descriptorSetLayout;
 		VkDescriptorPool _descriptorPool;
@@ -59,6 +62,8 @@ namespace VulkanRenderer
 		std::vector<VkSemaphore> _renderFinishedSemaphores;
 		std::vector<VkFence> _inFlightFences;
 
+		VulkanPipeline* _quadPipeline;
+		VulkanPipeline* _linePipeline;
 
 		//INSTANCE
 		bool CheckValidationLayerSupport();
@@ -88,7 +93,7 @@ namespace VulkanRenderer
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
 		//Gfxpipeline
-		void CreateGraphicsPipeline2DQuad();
+		//void CreateGraphicsPipeline2DQuad();
 
 		//cmdpool
 		void CreateCommandPool();
@@ -145,11 +150,23 @@ namespace VulkanRenderer
 
 		VulkanImage* WhiteTexture;
 
+		//Line rendering
+		std::vector<VulkanVertexBuffer> LineVertexBuffer;
+		std::vector<LineVertex*> LineVertices;
+		uint32_t LineVertexCount;
+		uint32_t LineIndexCount;
+
+		VulkanIndexBuffer LineIndexBuffer;
+
+		uint32_t _maxLineVertices;
+		uint32_t _maxLineIndices;
+
 
 		VulkanContext(GLFWwindow* window, const std::string& applicationName, const std::string& engineName);
 		~VulkanContext();
 
 		void InitQuadRendering();
+		void InitLineRendering();
 
 		//DescriptorSets
 		void CreateDescriptorSets();
@@ -157,6 +174,7 @@ namespace VulkanRenderer
 
 		void RenderQuad(const glm::mat4& transform, const glm::vec4& color);
 		void RenderQuad(const glm::mat4& transform, VulkanImage& texture, float tilingFactor, const glm::vec4& tintColor, glm::vec2 uv0, glm::vec2 uv1);
+		void RenderLine(const glm::vec3 p1, const glm::vec3 p2, const glm::vec4& color1, const glm::vec4& color2);
 
 		void DrawFrame(GLFWwindow* window);
 

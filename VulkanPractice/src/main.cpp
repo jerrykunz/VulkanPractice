@@ -192,6 +192,17 @@ int main()
                 obj.Render(vulkanContext);
             }
 
+            vulkanContext.RenderLine(glm::vec3(0.0f, 0.0f, 0.0f),
+                                     glm::vec3(20.0f, 0.0f, 0.0f), 
+                                     glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+                                     glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+            vulkanContext.RenderLine(glm::vec3(20.0f, 0.0f, 0.0f),
+                                     glm::vec3(20.0f, 20.0f, 0.0f),
+                                     glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                                     glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
+
             //causes error when here
             //vulkanContext.UpdateTextureDescriptorSets();
 

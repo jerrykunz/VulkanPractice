@@ -58,6 +58,38 @@ namespace VulkanRenderer
             return attributeDescriptions; 
         }
 
+        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions2()
+        {
+            std::vector<VkVertexInputAttributeDescription> attributeDescriptions(5);
+
+            attributeDescriptions[0].binding = 0;
+            attributeDescriptions[0].location = 0;
+            attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[0].offset = offsetof(QuadVertex, pos);
+
+            attributeDescriptions[1].binding = 0;
+            attributeDescriptions[1].location = 1;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].offset = offsetof(QuadVertex, color);
+
+            attributeDescriptions[2].binding = 0;
+            attributeDescriptions[2].location = 2;
+            attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[2].offset = offsetof(QuadVertex, texCoord);
+
+            attributeDescriptions[3].binding = 0;
+            attributeDescriptions[3].location = 3;
+            attributeDescriptions[3].format = VK_FORMAT_R32_SFLOAT;
+            attributeDescriptions[3].offset = offsetof(QuadVertex, texIndex);
+
+            attributeDescriptions[4].binding = 0;
+            attributeDescriptions[4].location = 4;
+            attributeDescriptions[4].format = VK_FORMAT_R32_SFLOAT;
+            attributeDescriptions[4].offset = offsetof(QuadVertex, tilingFactor);
+
+            return attributeDescriptions;
+        }
+
         bool operator==(const QuadVertex& other) const 
         {
             return pos == other.pos && color == other.color && texCoord == other.texCoord;
@@ -79,9 +111,9 @@ namespace VulkanRenderer
             return bindingDescription;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 5> getAttributeDescriptions()
+        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions()
         {
-            std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions{};
+            std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
 
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
