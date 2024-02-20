@@ -20,13 +20,13 @@ namespace VulkanRenderer
             throw std::runtime_error(warn + err);
         }
 
-        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+        std::unordered_map<QuadVertex, uint32_t> uniqueVertices{};
 
         for (const auto& shape : shapes)
         {
             for (const auto& index : shape.mesh.indices)
             {
-                Vertex vertex{};
+                QuadVertex vertex{};
 
                 vertex.pos = 
                 {

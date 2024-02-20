@@ -25,7 +25,7 @@ namespace VulkanRenderer
 		uint8_t instancesIndex;
 		uint8_t instancesEnd;
 
-		std::vector<Vertex> Vertices;
+		std::vector<QuadVertex> Vertices;
 		VulkanVertexBuffer VertexBuffer;
 
 		std::vector<uint32_t> Indices;

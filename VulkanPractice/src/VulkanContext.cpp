@@ -70,7 +70,7 @@ namespace VulkanRenderer
         UniformBuffers.push_back(InstanceDataUniformBuffer);
 
         CreateDescriptorSetLayout();
-        CreateGraphicsPipeline2D();
+        CreateGraphicsPipeline2DQuad();
         CreateCommandPool();
 
         _frameBuffer = new VulkanFrameBuffer(*PhysicalDevice,
@@ -120,7 +120,7 @@ namespace VulkanRenderer
         for (int i = 0; i < _maxFramesInFlight; i++)
         {
             QuadVertexBuffer[i] = VulkanVertexBuffer();
-            QuadVertices[i] = new Vertex[_maxQuadVertices];
+            QuadVertices[i] = new QuadVertex[_maxQuadVertices];
         }
 
         _quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
@@ -236,8 +236,8 @@ namespace VulkanRenderer
         delete _swapChain;
         _swapChain = nullptr;
 
-        vkDestroyPipeline(Device->Device, _GraphicsPipeline2D, nullptr);
-        vkDestroyPipelineLayout(Device->Device, _pipelineLayout2D, nullptr);
+        vkDestroyPipeline(Device->Device, _GraphicsPipeline2DQuad, nullptr);
+        vkDestroyPipelineLayout(Device->Device, _pipelineLayout2DQuad, nullptr);
         vkDestroyRenderPass(Device->Device, _renderPass, nullptr);
 
         delete ViewProjectionUniformBuffer;
@@ -328,12 +328,12 @@ namespace VulkanRenderer
 
         //2D quad rendering
         {
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _GraphicsPipeline2D);
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _GraphicsPipeline2DQuad);
 
             //moved here, still causes errors
             UpdateTextureDescriptorSets();
 
-            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout2D, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout2DQuad, 0, 1, &_descriptorSets[CurrentFrame], 0, nullptr);
 
             QuadVertexBuffer[CurrentFrame].LoadVertices(QuadVertices[CurrentFrame],
                 QuadVertexCount,
@@ -971,7 +971,7 @@ namespace VulkanRenderer
         }
     }
 
-    void VulkanContext::CreateGraphicsPipeline2D()
+    void VulkanContext::CreateGraphicsPipeline2DQuad()
     {
         auto vertShaderCode = ReadFile("shaders/2dvert.spv");
         auto fragShaderCode = ReadFile("shaders/2dfrag.spv");
@@ -996,8 +996,8 @@ namespace VulkanRenderer
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+        auto bindingDescription = QuadVertex::getBindingDescription();
+        auto attributeDescriptions = QuadVertex::getAttributeDescriptions();
 
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
@@ -1079,7 +1079,7 @@ namespace VulkanRenderer
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-        if (vkCreatePipelineLayout(Device->Device, &pipelineLayoutInfo, nullptr, &_pipelineLayout2D) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(Device->Device, &pipelineLayoutInfo, nullptr, &_pipelineLayout2DQuad) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout!");
         }
@@ -1096,12 +1096,12 @@ namespace VulkanRenderer
         pipelineInfo.pDepthStencilState = &depthStencil;
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = &dynamicState;
-        pipelineInfo.layout = _pipelineLayout2D;
+        pipelineInfo.layout = _pipelineLayout2DQuad;
         pipelineInfo.renderPass = _renderPass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(Device->Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_GraphicsPipeline2D) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(Device->Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_GraphicsPipeline2DQuad) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create graphics pipeline!");
         }

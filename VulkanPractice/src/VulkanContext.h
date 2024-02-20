@@ -46,8 +46,8 @@ namespace VulkanRenderer
 
 		//Vulkan structs
 		VkRenderPass _renderPass;
-		VkPipelineLayout _pipelineLayout2D;
-		VkPipeline _GraphicsPipeline2D;
+		VkPipelineLayout _pipelineLayout2DQuad;
+		VkPipeline _GraphicsPipeline2DQuad;
 
 		VkDescriptorSetLayout _descriptorSetLayout;
 		VkDescriptorPool _descriptorPool;
@@ -88,7 +88,7 @@ namespace VulkanRenderer
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
 		//Gfxpipeline
-		void CreateGraphicsPipeline2D();
+		void CreateGraphicsPipeline2DQuad();
 
 		//cmdpool
 		void CreateCommandPool();
@@ -133,7 +133,7 @@ namespace VulkanRenderer
 		glm::vec4 _quadVertexPositions[4];
 
 		std::vector<VulkanVertexBuffer> QuadVertexBuffer;
-		std::vector<Vertex*> QuadVertices;
+		std::vector<QuadVertex*> QuadVertices;
 		uint32_t QuadVertexCount;
 		uint32_t QuadIndexCount;
 

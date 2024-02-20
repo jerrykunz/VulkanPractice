@@ -148,6 +148,7 @@
     <ClCompile Include="src\VulkanIndexBuffer.cpp" />
     <ClCompile Include="src\VulkanModel.cpp" />
     <ClCompile Include="src\VulkanPhysicalDevice.cpp" />
+    <ClCompile Include="src\VulkanPipeLine.cpp" />
     <ClCompile Include="src\VulkanPushConstants.h" />
     <ClCompile Include="src\VulkanQueueFamilyIndices.h" />
     <ClCompile Include="src\VulkanSwapChain.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="src\VulkanIndexBuffer.h" />
     <ClInclude Include="src\VulkanModel.h" />
     <ClInclude Include="src\VulkanPhysicalDevice.h" />
+    <ClInclude Include="src\VulkanPipeLine.h" />
     <ClInclude Include="src\VulkanSwapChain.h" />
     <ClInclude Include="src\VulkanSwapChainSupportDetails.h" />
     <ClInclude Include="src\VulkanFrameBuffer.h" />
