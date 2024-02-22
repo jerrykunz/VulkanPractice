@@ -142,7 +142,19 @@ int main()
     };
     objects.push_back(object1);
 
-    
+    GameObject object3
+    {
+        .Visible = true,
+        .Transform = glm::mat4(1.0f),
+        .Texture = nullptr,
+        .Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+        .RotationMultiplier = 0.0f,
+    };
+    //ORDER MATTERS
+    object3.Transform = glm::translate(object3.Transform, glm::vec3(0.0f, 0.0f, 0.1f));
+    object3.Transform = glm::rotate(object3.Transform, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    object3.Transform = glm::scale(object3.Transform, glm::vec3(0.01f, 1.0f, 1.0f));
+    objects.push_back(object3);
   
     
     //Do this now that we have all the images/models set up
@@ -205,7 +217,14 @@ int main()
                                      glm::vec3(20.0f, 20.0f, 0.0f),
                                      glm::vec4(1.0f, 0.0f, 0.0f, 0.01f),
                                      glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-                                     
+                                    
+            vulkanContext.RenderQuadLine(glm::vec3(0.0f, 0.0f, 0.11f),
+                                         glm::vec3(2.0f, 2.0f, 0.11f),
+                                         0.01f,
+                                         glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                                         glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                                         glm::vec4(0.0f, 1.0f, 0.0f, 1.0f),
+                                         glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
             //causes error when here
             //vulkanContext.UpdateTextureDescriptorSets();

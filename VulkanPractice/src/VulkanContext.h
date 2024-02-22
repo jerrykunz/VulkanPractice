@@ -175,6 +175,7 @@ namespace VulkanRenderer
 		void RenderQuad(const glm::mat4& transform, const glm::vec4& color);
 		void RenderQuad(const glm::mat4& transform, VulkanImage& texture, float tilingFactor, const glm::vec4& tintColor, glm::vec2 uv0, glm::vec2 uv1);
 		void RenderLine(const glm::vec3 p1, const glm::vec3 p2, const glm::vec4& color1, const glm::vec4& color2);
+		void RenderQuadLine(glm::vec3 start, glm::vec3 end, float width, glm::vec4 startColor1, glm::vec4 startColor2, glm::vec4 endColor1, glm::vec4 endColor2);
 
 		void DrawFrame(GLFWwindow* window);
 

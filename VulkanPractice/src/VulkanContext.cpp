@@ -773,6 +773,48 @@ namespace VulkanRenderer
         LineIndexCount += 2;
     }
 
+    void VulkanContext::RenderQuadLine(glm::vec3 start, glm::vec3 end, float width, glm::vec4 startColor1, glm::vec4 startColor2, glm::vec4 endColor1, glm::vec4 endColor2)
+    {
+
+        const float textureIndex = 0.0f; // White Texture
+        constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+        const float tilingFactor = 1.0f;
+
+        glm::vec3 direction = glm::normalize(end - start);
+        float length = glm::length(end - start);
+
+        glm::vec3 perpendicular = glm::vec3(-direction.y, direction.x, direction.z) * (width * 0.5f);
+        //glm::vec3 perpendicular = glm::vec3(-direction.y, direction.x, 0.0f) * (width * 0.5f);
+
+        QuadVertices[CurrentFrame][QuadVertexCount].pos = start + perpendicular;
+        QuadVertices[CurrentFrame][QuadVertexCount].color = startColor1;
+        QuadVertices[CurrentFrame][QuadVertexCount].texCoord = textureCoords[0];
+        QuadVertices[CurrentFrame][QuadVertexCount].texIndex = textureIndex;
+        QuadVertices[CurrentFrame][QuadVertexCount].tilingFactor = tilingFactor;
+
+        QuadVertices[CurrentFrame][QuadVertexCount + 1].pos = end + perpendicular;
+        QuadVertices[CurrentFrame][QuadVertexCount + 1].color = endColor1;
+        QuadVertices[CurrentFrame][QuadVertexCount + 1].texCoord = textureCoords[2];
+        QuadVertices[CurrentFrame][QuadVertexCount + 1].texIndex = textureIndex;
+        QuadVertices[CurrentFrame][QuadVertexCount + 1].tilingFactor = tilingFactor;
+
+        QuadVertices[CurrentFrame][QuadVertexCount + 2].pos = end - perpendicular;
+        QuadVertices[CurrentFrame][QuadVertexCount + 2].color = endColor2;
+        QuadVertices[CurrentFrame][QuadVertexCount + 2].texCoord = textureCoords[3];
+        QuadVertices[CurrentFrame][QuadVertexCount + 2].texIndex = textureIndex;
+        QuadVertices[CurrentFrame][QuadVertexCount + 2].tilingFactor = tilingFactor;
+
+        QuadVertices[CurrentFrame][QuadVertexCount + 3].pos = start - perpendicular;
+        QuadVertices[CurrentFrame][QuadVertexCount + 3].color = startColor2;
+        QuadVertices[CurrentFrame][QuadVertexCount + 3].texCoord = textureCoords[1];
+        QuadVertices[CurrentFrame][QuadVertexCount + 3].texIndex = textureIndex;
+        QuadVertices[CurrentFrame][QuadVertexCount + 3].tilingFactor = tilingFactor;
+
+
+        QuadVertexCount += 4;
+        QuadIndexCount += 6;
+    }
+
     std::vector<const char*> VulkanContext::GetRequiredExtensions()
     {
         uint32_t glfwExtensionCount = 0;
