@@ -11,7 +11,7 @@ namespace VulkanRenderer
     struct QuadVertex
     {
         glm::vec3 pos;
-        glm::vec3 color;
+        glm::vec4 color;
         glm::vec2 texCoord;
         float texIndex;
         float tilingFactor;
@@ -37,7 +37,7 @@ namespace VulkanRenderer
 
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
-            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
             attributeDescriptions[1].offset = offsetof(QuadVertex, color);
 
             attributeDescriptions[2].binding = 0;
@@ -69,7 +69,7 @@ namespace VulkanRenderer
 
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
-            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
             attributeDescriptions[1].offset = offsetof(QuadVertex, color);
 
             attributeDescriptions[2].binding = 0;
@@ -99,7 +99,7 @@ namespace VulkanRenderer
     struct LineVertex
     {
         glm::vec3 pos;
-        glm::vec3 color;
+        glm::vec4 color;
 
         static VkVertexInputBindingDescription getBindingDescription()
         {
@@ -118,17 +118,17 @@ namespace VulkanRenderer
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
             attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[0].offset = offsetof(QuadVertex, pos);
+            attributeDescriptions[0].offset = offsetof(LineVertex, pos);
 
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
-            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(QuadVertex, color);
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+            attributeDescriptions[1].offset = offsetof(LineVertex, color);
          
             return attributeDescriptions;
         }
 
-        bool operator==(const QuadVertex& other) const
+        bool operator==(const LineVertex& other) const
         {
             return pos == other.pos && color == other.color;
         }

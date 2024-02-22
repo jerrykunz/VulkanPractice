@@ -707,6 +707,8 @@ namespace VulkanRenderer
         constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
         const float tilingFactor = 1.0f;
 
+        QuadVertex* testPtr = nullptr;
+        QuadVertex* testPtr2 = nullptr;
         for (size_t i = 0; i < 4; i++)
         {
             size_t index = QuadVertexCount + i;
@@ -715,7 +717,10 @@ namespace VulkanRenderer
             QuadVertices[CurrentFrame][index].texCoord = textureCoords[i];
             QuadVertices[CurrentFrame][index].texIndex = textureIndex;
             QuadVertices[CurrentFrame][index].tilingFactor = tilingFactor;
+            testPtr = &QuadVertices[CurrentFrame][index];
         }
+        testPtr2 = testPtr--;
+
 
         QuadVertexCount += 4;
         QuadIndexCount += 6;

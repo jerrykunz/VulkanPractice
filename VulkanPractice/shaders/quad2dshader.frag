@@ -18,7 +18,7 @@ layout (binding = 2) uniform sampler2D u_Textures[32];
 void main()
 {
 	color = texture(u_Textures[int(TexIndex)], Input.TexCoord * Input.TilingFactor) * Input.Color;
-
+	//color.a = 0.1f;
 	// Discard to avoid depth write
 	if (color.a == 0.0)
 		discard;

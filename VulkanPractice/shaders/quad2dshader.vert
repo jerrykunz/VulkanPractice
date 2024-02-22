@@ -23,8 +23,9 @@ layout (location = 0) out VertexOutput Output;
 layout (location = 5) out flat float TexIndex;
 
 void main()
-{
+{	
 	Output.Color = a_Color;
+	//Output.Color.a = 0.1f;
 	Output.TexCoord = a_TexCoord;
 	TexIndex = a_TexIndex;
 	Output.TilingFactor = a_TilingFactor;

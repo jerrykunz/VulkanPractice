@@ -120,26 +120,30 @@ int main()
     camera.setRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.movementSpeed = 3.0f;
 
+    //order matters, if this is after object1 transparency won't work
+    GameObject object2
+    {
+        .Visible = true,
+        .Transform = glm::mat4(1.0f),
+        .Texture = &texture,
+        .Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+        .RotationMultiplier = 0.1f,
+    };
+    object2.Transform = glm::translate(object2.Transform, glm::vec3(0.0f, 0.0f, -1.1f));
+    objects.push_back(object2);
+
     GameObject object1
     {
         .Visible = true,
         .Transform = glm::mat4(1.0f),
         .Texture = nullptr, //vulkanContext.WhiteTexture, //&texture,
-        .Color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+        .Color = glm::vec4(1.0f, 0.0f, 0.0f, 0.1f),
         .RotationMultiplier = 1.0f,        
     };
     objects.push_back(object1);
 
-    GameObject object2
-    {
-        .Visible = true,        
-        .Transform = glm::mat4(1.0f),       
-        .Texture = &texture,
-        .Color = glm::vec4(1.0f,1.0f,1.0f,1.0f),
-        .RotationMultiplier = 0.1f,
-    };
-    object2.Transform = glm::translate(object2.Transform, glm::vec3(0.0f, 0.0f, -1.1f));
-    objects.push_back(object2);
+    
+  
     
     //Do this now that we have all the images/models set up
     vulkanContext.CreateDescriptorSets();
@@ -199,7 +203,7 @@ int main()
 
             vulkanContext.RenderLine(glm::vec3(20.0f, 0.0f, 0.0f),
                                      glm::vec3(20.0f, 20.0f, 0.0f),
-                                     glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
+                                     glm::vec4(1.0f, 0.0f, 0.0f, 0.01f),
                                      glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
                                      
 
