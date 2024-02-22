@@ -4,7 +4,7 @@ namespace VulkanRenderer
 {
 	VulkanVertexBuffer::VulkanVertexBuffer()
 	{
-
+        VertexBuffer = VK_NULL_HANDLE;
 	}
 
     //template<typename VertexType>

@@ -32,7 +32,10 @@ namespace VulkanRenderer
             memcpy(data, vertices.data(), (size_t)bufferSize);
             vkUnmapMemory(device, stagingBufferMemory);
 
-            CreateBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
+            if (VertexBuffer == VK_NULL_HANDLE)
+            {
+                CreateBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
+            }
 
             CopyBuffer(device, graphicsQueue, commandPool, stagingBuffer, VertexBuffer, bufferSize);
 
@@ -57,7 +60,10 @@ namespace VulkanRenderer
             memcpy(data, vertices, (size_t)bufferSize);
             vkUnmapMemory(device, stagingBufferMemory);
 
-            CreateBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
+            if (VertexBuffer == VK_NULL_HANDLE)
+            {
+                CreateBuffer(physicalDevice, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VertexBuffer, VertexBufferMemory);
+            }
 
             CopyBuffer(device, graphicsQueue, commandPool, stagingBuffer, VertexBuffer, bufferSize);
 

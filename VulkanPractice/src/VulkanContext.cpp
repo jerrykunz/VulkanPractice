@@ -423,6 +423,7 @@ namespace VulkanRenderer
         //END 2D quad rendering END
 
         //2d line rendering
+        if (LineVertexCount > 0)
         {
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _linePipeline->Pipeline);
 

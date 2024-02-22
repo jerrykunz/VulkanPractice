@@ -125,7 +125,7 @@ int main()
         .Visible = true,
         .Transform = glm::mat4(1.0f),
         .Texture = nullptr, //vulkanContext.WhiteTexture, //&texture,
-        .Color = glm::vec4(1.0f, 0.0f, 0.0f, 0.1f),
+        .Color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
         .RotationMultiplier = 1.0f,        
     };
     objects.push_back(object1);
@@ -191,7 +191,7 @@ int main()
             {
                 obj.Render(vulkanContext);
             }
-
+            
             vulkanContext.RenderLine(glm::vec3(0.0f, 0.0f, 0.0f),
                                      glm::vec3(20.0f, 0.0f, 0.0f), 
                                      glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -201,7 +201,7 @@ int main()
                                      glm::vec3(20.0f, 20.0f, 0.0f),
                                      glm::vec4(1.0f, 0.0f, 0.0f, 1.0f),
                                      glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-
+                                     
 
             //causes error when here
             //vulkanContext.UpdateTextureDescriptorSets();
